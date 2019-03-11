@@ -4,12 +4,11 @@
 
 ---
 
-### はじめに
+### 継続モナドを取り上げる理由
 
-- 継続モナドを取り上げるモチベーション
-  - アプリケーションサーバのコントローラ内で使われている
-  - 個人的に読みやすくはあると思う
-  - しかし初見だと変更し辛く感じる
+- 既にアプリケーションサーバのコントローラ内で使われている
+  - (個人的に) 読みやすくはあると思う
+  - しかし初見だと手を付けづらい
 
 ```scala
 // 例: GitHub の issue を変更するようなエンドポイント
@@ -162,7 +161,8 @@ trait Monad[F[_]] {
 implicit def optionMonad: Monad[Option] = new Monad[Option] {
   override def pure[A](a: A): Option[A] =
     Option(a)
-  override def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] =
+  override def flatMap[A, B](fa: Option[A])(
+      f: A => Option[B]): Option[B] =
     fa.flatMap(f)
 }
 ```
@@ -252,6 +252,8 @@ lazy val sample1: Unit = {
  close file2.txt
  close file1.txt
 ```
+
+---
 
 ---
 
