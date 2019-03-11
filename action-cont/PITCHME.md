@@ -210,7 +210,47 @@ object Cont {
 ### 継続モナドを試す
 
 ```scala
+case class MyFile(name: String) {
+  def open(): Unit = println(s"open $name")
+  def close(): Unit = println(s"close $name")
+  def content: String = s"i am $name"
+}
 
+def withFile[R](name: String): Cont[R, MyFile] = Cont { f =>
+  val file = MyFile(name)
+  file.open()
+  try {
+    f(file)
+  } finally {
+    file.close()
+  }
+}
+```
+
+---
+
+### 継続モナドを試す
+
+```scala
+lazy val sample1: Unit = {
+  val cont: Cont[Unit, String] = for {
+    file1 <- withFile("file1.txt")
+    file2 <- withFile("file2.txt")
+    file3 <- withFile("file3.txt")
+  } yield s"${file1.content}. ${file2.content}. ${file3.content}"
+  cont.run(println)
+}
+```
+
+```scala
+ scala> sample1
+ open file1.txt
+ open file2.txt
+ open file3.txt
+ i am file1.txt. i am file2.txt. i am file3.txt
+ close file3.txt
+ close file2.txt
+ close file1.txt
 ```
 
 ---
