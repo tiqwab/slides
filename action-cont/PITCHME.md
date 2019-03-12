@@ -47,7 +47,7 @@ def editIssue(): Action[IssueEditRequest] =
 
 ---
 
-### CPS 変換例
+### CPS変換例
 
 ```scala
 // ただ 2 をかける
@@ -84,7 +84,7 @@ def factorial2(n: Int): Int = {
 
 ---
 
-### @css[headline](階乗 in CPS)
+### CPSで階乗計算
 
 ```scala
 // CPS
@@ -159,7 +159,7 @@ trait Monad[F[_]] {
 
 ---
 
-### 例. Option モナド
+### 例. Optionモナド
 
 ```scala
 implicit def optionMonad: Monad[Option] = new Monad[Option] {
