@@ -255,6 +255,58 @@ lazy val sample1: Unit = {
 
 ---
 
+### Play Framework
+
+- Scala, Java の Web アプリケーションフレームワーク
+
+```scala
+// 単純なコントローラ例
+class SampleController(cc: ControllerComponents)
+    extends AbstractController(cc) {
+  // 各エンドポイントは Action[A] 型 (A はリクエストボディの型)
+  def sample1(): Action[AnyContent] = Action.async { req =>
+    // Future[play.api.mvc.Result] を返す
+    Future.successful(Ok("ok")) // 200 Ok
+  }
+}
+```
+
+---
+
+### ActionCont
+
+```scala
+type ActionCont[A] = Cont[Future[Result], A]
+
+// 再掲
+case class Cont[R, A](run: (A => R) => R) {
+  def flatMap[B](f: A => Cont[R, B]): Cont[R, B] =
+    Cont(g => run(a => f(a).run(g)))
+  def map[B](f: A => B): Cont[R, B] =
+    flatMap(x => Cont.pure(f(x)))
+}
+```
+
+---
+
+### ActionCont 使用イメージ
+
+```scala
+  def editIssue(): Action[IssueEditRequest] =
+    Action.async(jsonParser[IssueEditRequest]) { req =>
+      val editReq = req.body
+      (for {
+        conn <- withConnection
+        currentIssue <- findIssueById(editReq.id)(conn)
+        _ <- isIssueEditable(currentIssue)(BadRequest)
+        _ <- updateIssue(editReq.id, editReq.content)
+      } yield Ok("ok")).run(Future.successful)
+    }
+```
+
+@[1-10]
+@[1-3, 10]
+
 ---
 
 ### 1 枚目
