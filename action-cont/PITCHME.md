@@ -4,46 +4,46 @@
 
 ---
 
-### 継続モナドを取り上げる理由
+#### 継続モナドを取り上げる理由
 
 - 既にアプリケーションサーバのコントローラ内で使われている
   - (個人的に) 読みやすくはあると思う
   - しかし初見だと手を付けづらい
 
 ```scala
-// 例: GitHub の issue を変更するようなエンドポイント
-def editIssue(): Action[IssueEditRequest] =
-  Action.async { implicit req =>
-    val body = req.body
-    (for {
-      session <- dbCont.getSession // commit if successful, otherwise rollback
-      currentIssue <- issueCont.getById(body.issueId) // 404 if not found
-      _ <- issueCont.isEditable(currentIssue, body.content)(
-        BadRequest("cannot edit issue"))
-      _ <- issueCont.update(currentIssue.id, body.content)
-    } yield ()).run_
-  }
+  // 例: GitHub の issue を変更するようなエンドポイント
+  def editIssue(): Action[IssueEditRequest] =
+    Action.async(jsonParser[IssueEditRequest]) { req =>
+      val editReq = req.body
+      (for {
+        conn <- withConnection
+        currentIssue <- findIssueById(editReq.id)(conn)
+        _ <- isIssueEditable(currentIssue)(BadRequest)
+        _ <- updateIssue(editReq.id, editReq.content)
+      } yield Ok("ok")).run(Future.successful)
+    }
 ```
 
 ---
 
-### 継続とは
+#### 継続とは
 
 - 「その後の計算」を表す概念
   - 引用: [shift/reset プログラミング入門](http://pllab.is.ocha.ac.jp/~asai/cw2011tutorial/main-j.pdf)
-- 継続を値としてサポートする言語はあまり無い (らしい)
+- 継続を値としてサポートする言語
+  - あまり無い (らしい)
   - よく聞くのは Scheme とか
 
 ---
 
-### CPS
+#### CPS
 
 - Continuation Passing Style (継続渡し形式)
 - ユーザが CPS で書けば継続を扱える
 
 ---
 
-### CPS 変換例
+#### CPS 変換例
 
 ```scala
 // ただ 2 をかける
@@ -60,7 +60,7 @@ val sample: Int =
 
 ---
 
-### 階乗
+#### 階乗計算
 
 ```scala
 // 普通に階乗を求める
@@ -80,7 +80,7 @@ def factorial2(n: Int): Int = {
 
 ---
 
-### CPS で階乗計算
+#### CPS で階乗計算
 
 ```scala
 // CPS
@@ -89,9 +89,8 @@ def factorialCPS[A](n: Int)(cont: Int => A): A =
   else factorialCPS(n - 1)(x => cont(n * x))
 ```
 
-計算イメージ:
-
 ```
+// 計算イメージ
 factorialCPS(3)(x1 => x1)
 factorialCPS(2)(x2 => (x1 => x1)(3 * x2))
 factorialCPS(1)(x3 => (x2 => (x1 => x1)(3 * x2))(2 * x3))
@@ -103,7 +102,7 @@ factorialCPS(1)(x3 => (x2 => (x1 => x1)(3 * x2))(2 * x3))
 
 ---
 
-### CPS
+#### CPS
 
 - わかりにくい
   - 慣れの問題なのかもしれないけど
@@ -112,7 +111,7 @@ factorialCPS(1)(x3 => (x2 => (x1 => x1)(3 * x2))(2 * x3))
 
 ---
 
-### 身近な CPS
+#### 身近な CPS
 
 ```javascript
 // コールバックによる非同期処理
@@ -132,7 +131,7 @@ with open('/tmp/foo.txt') as f:
 
 ---
 
-### コールバック地獄
+#### コールバック地獄
 
 - 複雑な処理になると辛い
 - CPS で書かれた関数同士を上手く組み合わせたい
@@ -140,7 +139,7 @@ with open('/tmp/foo.txt') as f:
 
 ---
 
-### モナド
+#### モナド
 
 - 2 つの操作を提供
 - モナド則を満たすもの (ここでは省略)
@@ -169,7 +168,7 @@ implicit def optionMonad: Monad[Option] = new Monad[Option] {
 
 ---
 
-### for 式
+#### for 式
 
 ```scala
 // pure と flatMap でこんな処理がかける
@@ -190,7 +189,7 @@ for {
 
 ---
 
-### 継続モナドの定義
+#### 継続モナドの定義
 
 ```scala
 case class Cont[R, A](run: (A => R) => R) {
@@ -207,7 +206,7 @@ object Cont {
 
 ---
 
-### 継続モナドを試す
+#### 継続モナドを試す
 
 ```scala
 case class MyFile(name: String) {
@@ -229,7 +228,7 @@ def withFile[R](name: String): Cont[R, MyFile] = Cont { f =>
 
 ---
 
-### 継続モナドを試す
+#### 継続モナドを試す
 
 ```scala
 lazy val sample1: Unit = {
@@ -255,7 +254,7 @@ lazy val sample1: Unit = {
 
 ---
 
-### Play Framework
+#### Play Framework
 
 - Scala, Java の Web アプリケーションフレームワーク
 
@@ -266,14 +265,14 @@ class SampleController(cc: ControllerComponents)
   // 各エンドポイントは Action[A] 型 (A はリクエストボディの型)
   def sample1(): Action[AnyContent] = Action.async { req =>
     // Future[play.api.mvc.Result] を返す
-    Future.successful(Ok("ok")) // 200 Ok
+    Future.successful(Ok("ok")) // 200 OK
   }
 }
 ```
 
 ---
 
-### ActionCont
+#### ActionCont
 
 ```scala
 type ActionCont[A] = Cont[Future[Result], A]
@@ -289,7 +288,7 @@ case class Cont[R, A](run: (A => R) => R) {
 
 ---
 
-### ActionCont 使用例
+#### ActionCont 使用例
 
 ```scala
   def editIssue(): Action[IssueEditRequest] =
