@@ -397,7 +397,7 @@ def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
   }
 ```
 
----?gist=tiqwab/ee77c33c1f8263eb2551b3c429a96780&lang=Scala
+---?gist=tiqwab/ee77c33c1f8263eb2551b3c429a96780&lang=Scala&file=ActionContSample1.scala
 
 @[2]
 
