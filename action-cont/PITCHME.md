@@ -1,7 +1,3 @@
-.headline {
-    text-transform: none;
-}
-
 ## 継続モナドについて
 
 ### 2019-03-13
