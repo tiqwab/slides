@@ -1,3 +1,7 @@
+.headline {
+    text-transform: none;
+}
+
 ## 継続モナドについて
 
 ### 2019-03-13
@@ -80,7 +84,7 @@ def factorial2(n: Int): Int = {
 
 ---
 
-### 階乗 in CPS
+### @css[headline](階乗 in CPS)
 
 ```scala
 // CPS
@@ -309,15 +313,19 @@ case class Cont[R, A](run: (A => R) => R) {
 
 ---
 
-### ActionCont 使用例
-
 ```scala
-        conn <- withConnection // DB の connection を取得するような
+      (for {
+        conn <- withConnection // <-
+        currentIssue <- findIssueById(editReq.id)(conn)
+        _ <- isIssueEditable(currentIssue)(BadRequest)
+        _ <- updateIssue(editReq.id, editReq.content)
+      } yield Ok("ok")).run(Future.successful)
 ```
 
 ```scala
+// <- DB の connection 取得のような　
 def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
-  ActionCont { f => // f は MyConnection => Future[Result] という継続
+  ActionCont { f => // MyConnection => Future[Result] という継続
     val conn = new MyConnection()
     conn.open()
     try {
@@ -333,10 +341,13 @@ def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
 
 ---
 
-### ActionCont 使用例
-
 ```scala
-        currentIssue <- findIssueById(editReq.id)(conn)
+      (for {
+        conn <- withConnection
+        currentIssue <- findIssueById(editReq.id)(conn) // <-
+        _ <- isIssueEditable(currentIssue)(BadRequest)
+        _ <- updateIssue(editReq.id, editReq.content)
+      } yield Ok("ok")).run(Future.successful)
 ```
 
 ```scala
@@ -353,10 +364,13 @@ def findIssueById(id: Long)(implicit conn: MyConnection): ActionCont[Issue] =
 
 ---
 
-### ActionCont 使用例
-
 ```scala
-        _ <- isIssueEditable(currentIssue)(BadRequest)
+      (for {
+        conn <- withConnection
+        currentIssue <- findIssueById(editReq.id)(conn)
+        _ <- isIssueEditable(currentIssue)(BadRequest) // <-
+        _ <- updateIssue(editReq.id, editReq.content)
+      } yield Ok("ok")).run(Future.successful)
 ```
 
 ```scala
@@ -365,54 +379,5 @@ def isIssueEditable(issue: Issue)(result: Result): ActionCont[Unit] =
     ActionCont.pure(())
   } else {
     ActionCont { _ => Future.successful(result) }
-  }
-```
-
----?gist=tiqwab/ee77c33c1f8263eb2551b3c429a96780&lang=Scala
-
-```scala
-      (for {
-        conn <- withConnection
-        currentIssue <- findIssueById(editReq.id)(conn)
-        _ <- isIssueEditable(currentIssue)(BadRequest)
-        _ <- updateIssue(editReq.id, editReq.content)
-      } yield Ok("ok")).run(Future.successful)
-```
-
-@[2]
-
-```scala
-def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
-  ActionCont { f => // MyConnection => Future[Result] という継続
-    val conn = new MyConnection()
-    conn.open()
-    try {
-      f(conn) map { res =>
-        if (is4xx(res) || is5xx(res)) { conn.rollback(); res }
-        else { conn.commit(); res }
-      }
-    } finally {
-      conn.close()
-    }
-  }
-```
-
----?gist=tiqwab/ee77c33c1f8263eb2551b3c429a96780&lang=Scala&file=ActionContSample1.scala
-
-@[2]
-
-```scala
-def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
-  ActionCont { f => // MyConnection => Future[Result] という継続
-    val conn = new MyConnection()
-    conn.open()
-    try {
-      f(conn) map { res =>
-        if (is4xx(res) || is5xx(res)) { conn.rollback(); res }
-        else { conn.commit(); res }
-      }
-    } finally {
-      conn.close()
-    }
   }
 ```
