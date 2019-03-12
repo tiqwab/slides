@@ -289,7 +289,7 @@ case class Cont[R, A](run: (A => R) => R) {
 
 ---
 
-### ActionCont 使用イメージ
+### ActionCont 使用例
 
 ```scala
   def editIssue(): Action[IssueEditRequest] =
@@ -304,29 +304,95 @@ case class Cont[R, A](run: (A => R) => R) {
     }
 ```
 
-@[1-10]
 @[1-3, 10]
+@[4-9]
 
 ---
 
-### 1 枚目
-
-before code
+### ActionCont 使用例
 
 ```scala
-def foo(x: Int): Int =
-  x + 1
+        conn <- withConnection // DB の connection を取得するような
 ```
 
-after code
+```scala
+def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
+  ActionCont { f => // f は MyConnection => Future[Result] という継続
+    val conn = new MyConnection()
+    conn.open()
+    try {
+      f(conn) map { res =>
+        if (is4xx(res) || is5xx(res)) { conn.rollback(); res }
+        else { conn.commit(); res }
+      }
+    } finally {
+      conn.close()
+    }
+  }
+```
 
 ---
 
-## 2 枚目
+### ActionCont 使用例
 
-This is text. This is text. This is text.
-これはテキスト。これはテキスト。これはテキスト。
+```scala
+        currentIssue <- findIssueById(editReq.id)(conn)
+```
 
-- one
-- two
-  - three
+```scala
+// リクエストで渡された id でデータ取得
+// 見つからなければ 404 で終わる
+def findIssueById(id: Long)(implicit conn: MyConnection): ActionCont[Issue] =
+  ActionCont { f => // f は Issue => Future[Result] という継続
+    Issues.findById(id) match {
+      case Some(issue) => f(issue)
+      case None        => Future.successful(NotFound)
+    }
+  }
+```
+
+---
+
+### ActionCont 使用例
+
+```scala
+        _ <- isIssueEditable(currentIssue)(BadRequest)
+```
+
+```scala
+def isIssueEditable(issue: Issue)(result: Result): ActionCont[Unit] =
+  if (issue.isEditable) {
+    ActionCont.pure(())
+  } else {
+    ActionCont { _ => Future.successful(result) }
+  }
+```
+
+---
+
+### テスト
+
+```scala
+      (for {
+        conn <- withConnection
+        currentIssue <- findIssueById(editReq.id)(conn)
+        _ <- isIssueEditable(currentIssue)(BadRequest)
+        _ <- updateIssue(editReq.id, editReq.content)
+      } yield Ok("ok")).run(Future.successful)
+```
+
+```scala
+def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
+  ActionCont { f => // f は MyConnection => Future[Result] という継続
+    val conn = new MyConnection()
+    conn.open()
+    try {
+      f(conn) map { res =>
+        if (is4xx(res) || is5xx(res)) { conn.rollback(); res }
+        else { conn.commit(); res }
+      }
+    } finally {
+      conn.close()
+    }
+  }
+```
