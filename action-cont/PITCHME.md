@@ -368,9 +368,7 @@ def isIssueEditable(issue: Issue)(result: Result): ActionCont[Unit] =
   }
 ```
 
----
-
-### テスト
+---?gist=tiqwab/ee77c33c1f8263eb2551b3c429a96780&lang=Scala
 
 ```scala
       (for {
@@ -381,9 +379,31 @@ def isIssueEditable(issue: Issue)(result: Result): ActionCont[Unit] =
       } yield Ok("ok")).run(Future.successful)
 ```
 
+@[2]
+
 ```scala
 def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
-  ActionCont { f => // f は MyConnection => Future[Result] という継続
+  ActionCont { f => // MyConnection => Future[Result] という継続
+    val conn = new MyConnection()
+    conn.open()
+    try {
+      f(conn) map { res =>
+        if (is4xx(res) || is5xx(res)) { conn.rollback(); res }
+        else { conn.commit(); res }
+      }
+    } finally {
+      conn.close()
+    }
+  }
+```
+
+---?gist=tiqwab/ee77c33c1f8263eb2551b3c429a96780&lang=Scala
+
+@[2]
+
+```scala
+def withConnection(implicit ec: ExecutionContext): ActionCont[MyConnection] =
+  ActionCont { f => // MyConnection => Future[Result] という継続
     val conn = new MyConnection()
     conn.open()
     try {
