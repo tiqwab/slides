@@ -381,4 +381,4 @@ def isIssueEditable(issue: Issue)(result: Result): ActionCont[Unit] =
 
 ### 資料まとめ
 
-- https://github.com/tiqwab/slides/tree/master/action-cont
+- [README of tiqwab/slides/action-cont](https://github.com/tiqwab/slides/tree/master/action-cont)
