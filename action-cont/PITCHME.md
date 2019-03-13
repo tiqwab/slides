@@ -11,7 +11,7 @@
   - しかし初見だと手を付けづらい
 
 ```scala
-  // 例: GitHub の issue を変更するようなエンドポイント
+  // 例. GitHub の issue を変更するようなエンドポイント
   def editIssue(): Action[IssueEditRequest] =
     Action.async(jsonParser[IssueEditRequest]) { req =>
       val editReq = req.body
@@ -376,3 +376,9 @@ def isIssueEditable(issue: Issue)(result: Result): ActionCont[Unit] =
     ActionCont { _ => Future.successful(result) }
   }
 ```
+
+---
+
+### 資料まとめ
+
+- https://github.com/tiqwab/slides/tree/master/action-cont
