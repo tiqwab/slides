@@ -93,7 +93,7 @@ JSON = null
 
 ### (余談) JsNumber は BigDecimal を持つ
 
-- Google Chrome v72.0.3626.121
+Google Chrome v72.0.3626.121:
 
 ```javascript
 > Number.MAX_SAFE_INTEGER
@@ -104,16 +104,7 @@ JSON = null
 "9007199254741000"
 ```
 
-- jq v1.6
-
-```
-$ echo 9007199254740991 | jq .
-9007199254740991
-$ echo 9007199254740999 | jq .
-9007199254741000
-```
-
-- play-json v2.7.2 (with default settings)
+play-json v2.7.2 (with default settings):
 
 ```scala
 scala> Json.stringify(JsNumber(9007199254740991L))
@@ -124,7 +115,82 @@ res8: String = 9007199254740999
 
 ---
 
+### 文字列と JsValue の相互変換
+
+String => JsValue
+
+```scala
+scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
+res0: play.api.libs.json.JsValue = {"name":"Alice","age":21}
+```
+
+JsValue => String
+
+```scala
+scala> val str = Json.stringify(json2)
+res1: String = {"name":"Alice","age":21}
+```
+
+---
+
 ### JsValue の作成
+
+冗長な作成
+
+```scala
+val sample1: JsValue =
+  Json.obj(
+    "name" -> JsString("Alice"),
+    "age" -> JsNumber(BigDecimal("20"))
+  )
+```
+
+---
+
+### JsValue の作成
+
+直感的な作成
+
+```scala
+val sample: JsValue =
+  Json.obj(
+    "name" -> "Alice",
+    "age" -> 20
+  )
+```
+
+---
+
+### JsValue の作成
+
+by implicit conversion
+(イメージ。ライブラリの実際の定義とは異なる)
+
+```scala
+import scala.languageFeature.implicitConversions
+
+implicit def stringToJsString(value: String): JsValue =
+  JsString(value)
+
+implicit def intToJsNumber(value: Int): JsValue =
+  JsNumber(BigDecimal(value))
+```
+
+```scala
+val sample: JsValue =
+  Json.obj(
+    "name" -> stringToJsString("Alice"),
+    "age" -> intToJsNumber(20)
+  )
+```
+
+---
+
+### Reads (Unmarshal)
+
+---
+
+### Writes (Marshal)
 
 ---
 
