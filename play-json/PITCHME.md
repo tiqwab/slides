@@ -54,6 +54,8 @@ JSON = null
 [1]: https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/JSON
 [2]: https://www.rfc-editor.org/rfc/rfc8259.txt
 
+---
+
 ### JsValue
 
 - play-json で JSON を表現する型
@@ -71,6 +73,8 @@ JSON = null
   case class JsObject(value: Map[String, JsValue]) extends JsValue
 ```
 
+---
+
 ### (余談) JsNumber は BigDecimal を持つ
 
 - JSON 内の number をどう処理するか
@@ -84,6 +88,8 @@ JSON = null
 
 [1]: https://www.rfc-editor.org/rfc/rfc8259.txt
 [2]: https://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
+
+---
 
 ### (余談) JsNumber は BigDecimal を持つ
 
