@@ -191,6 +191,66 @@ val sample: JsValue =
 
 ### Reads (Unmarshal)
 
+```scala
+case class Person(name: String, age: Int)
+
+val personReads: Reads[Person1] = (
+  (JsPath \ "name").read[String] ~
+    (JsPath \ "age").read[Int]
+)((name, age) => Person1(name, age)) // same as `Person1.apply _`
+
+val json = Json.parse("""{"name": "Alice", "age": 21}""")
+personReads.reads(json).get // Person(Alice,21)
+```
+
+- `(JsPath \ "name")`
+- `(JsPath \ "name").read[String]`
+- combinator (`~`)
+
+---
+
+### JsPath
+
+```scala
+val json = Json.parse("""{"name": "Alice", "age": 21}""")
+
+// (JsPath \ "name") のような表記で JSON 上のパスを表現する
+// JsResult は read の成功失敗を表せる型
+scala> val path1: JsPath = JsPath \ "address" \ "city"
+path1.asSingleJsResult(sample1)
+res0: JsResult[JsValue] = JsSuccess("Tokyo",)
+
+scala> val path2: JsPath = JsPath \ "foo"
+path2.asSingleJsResult(sample1) 
+res1: JsResult[JsValue] = JsError(...)
+```
+
+---
+
+### Reads[A]
+
+```scala
+// Reads[A] は `JsValue => JsResult[A]` という関数を表す
+val stringReads: Reads[String] = Reads { json =>
+  json match { // 冗長なパターンマッチだけどわかりやすく
+    case JsString(string) => JsSuccess(string, JsPath())
+    case _                => JsError("error")
+  }
+}
+```
+
+```scala
+scala> stringReads.reads(JsString("foo"))
+res2: JsResult[String] = JsSuccess(foo,)
+
+scala> stringReads1.reads(JsNumber(1))
+res3: JsResult[String] = JsError(...)
+```
+
+---
+
+### Reads コンビネータ
+
 ---
 
 ### Writes (Marshal)
