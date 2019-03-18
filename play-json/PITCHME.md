@@ -59,7 +59,7 @@ JSON = null
 ### JsValue
 
 - play-json で JSON を表現する型
-  - 先程の JSON 構文に則った定義
+- 先程の JSON 構文に則った定義
 
 ```scala
   sealed trait JsValue
@@ -80,11 +80,11 @@ JSON = null
 - JSON 内の number をどう処理するか
 - [RFC 88259][1]
   - どう処理するかは実装依存
-  - IEEE754 倍精度浮動小数点数として扱うのが無難
+  - e.g. IEEE754 倍精度浮動小数点数として扱う
 - [ECMAScript の仕様][2]
-  - IEEE754 倍精度浮動小数点数 として扱う
+  - IEEE754 倍精度浮動小数点数として扱う
 - play-json
-  - BigDecimal (任意精度の小数を表現するクラス)
+  - BigDecimal (任意精度の小数を表現する)
 
 [1]: https://www.rfc-editor.org/rfc/rfc8259.txt
 [2]: https://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
@@ -127,7 +127,7 @@ res0: play.api.libs.json.JsValue = {"name":"Alice","age":21}
 JsValue => String
 
 ```scala
-scala> val str = Json.stringify(json2)
+scala> val str = Json.stringify(json)
 res1: String = {"name":"Alice","age":21}
 ```
 
@@ -135,23 +135,25 @@ res1: String = {"name":"Alice","age":21}
 
 ### JsValue の作成
 
-冗長な作成
+明瞭だけど冗長な作成方法
 
 ```scala
-val sample1: JsValue =
-  Json.obj(
+// representing {"name": "Alice", "age": 21}
+val sample: JsValue =
+  JsObject(Map(
     "name" -> JsString("Alice"),
-    "age" -> JsNumber(BigDecimal("20"))
-  )
+    "age" -> JsNumber(BigDecimal("21"))
+  ))
 ```
 
 ---
 
 ### JsValue の作成
 
-直感的な作成
+より直感的
 
 ```scala
+// representing {"name": "Alice", "age": 21}
 val sample: JsValue =
   Json.obj(
     "name" -> "Alice",
@@ -164,7 +166,6 @@ val sample: JsValue =
 ### JsValue の作成
 
 by implicit conversion
-(イメージ。ライブラリの実際の定義とは異なる)
 
 ```scala
 import scala.languageFeature.implicitConversions
@@ -183,6 +184,8 @@ val sample: JsValue =
     "age" -> intToJsNumber(20)
   )
 ```
+
+(イメージ。ライブラリの実際の定義とは異なる)
 
 ---
 
