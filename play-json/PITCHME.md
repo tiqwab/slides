@@ -40,6 +40,9 @@ personReads.reads(json).get // Person(Alice,21)
 - [JSON - MDN][1]
 - [RFC 8259][2]
 
+[1]: https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/JSON
+[2]: https://www.rfc-editor.org/rfc/rfc8259.txt
+
 ```
 JSON = null
     or true or false
@@ -55,8 +58,6 @@ JSON = null
 
 ### 資料まとめ
 
-- [README of tiqwab/slides/play-json][3]
+- [README of tiqwab/slides/play-json][1]
 
-[1]: https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/JSON
-[2]: https://www.rfc-editor.org/rfc/rfc8259.txt
-[3]: https://github.com/tiqwab/slides/tree/master/play-json
+[1]: https://github.com/tiqwab/slides/tree/master/play-json
