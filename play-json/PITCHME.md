@@ -249,6 +249,18 @@ res3: JsResult[String] = JsError(...)
 
 ---
 
+### JsPath#reads
+
+- `(JsPath \ "name").read[String]`
+  - JsPath: どこを読むか
+  - Reads: どう読むか
+
+```scala
+
+```
+
+---
+
 ### Reads コンビネータ
 
 ---
