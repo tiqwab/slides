@@ -40,9 +40,6 @@ personReads.reads(json).get // Person(Alice,21)
 - [JSON - MDN][1]
 - [RFC 8259][2]
 
-[1]: https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/JSON
-[2]: https://www.rfc-editor.org/rfc/rfc8259.txt
-
 ```
 JSON = null
     or true or false
@@ -51,8 +48,77 @@ JSON = null
     or JSONObject
     or JSONArray
 
-... (以下略)
+...
 ```
+
+[1]: https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/JSON
+[2]: https://www.rfc-editor.org/rfc/rfc8259.txt
+
+### JsValue
+
+- play-json で JSON を表現する型
+  - 先程の JSON 構文に則った定義
+
+```scala
+  sealed trait JsValue
+
+  case object JsNull extends JsValue
+  // 実際は JsBoolean を継承した JsTrue と JsFalse オブジェクトが存在
+  case class JsBoolean(value: Boolean) extends JsValue
+  case class JsString(value: String) extends JsValue
+  case class JsNumber(value: BigDecimal) extends JsValue
+  case class JsArray(value: IndexedSeq[JsValue]) extends JsValue
+  case class JsObject(value: Map[String, JsValue]) extends JsValue
+```
+
+### (余談) JsNumber は BigDecimal を持つ
+
+- JSON 内の number をどう処理するか
+- [RFC 88259][1]
+  - どう処理するかは実装依存
+  - IEEE754 倍精度浮動小数点数として扱うのが無難
+- [ECMAScript の仕様][2]
+  - IEEE754 倍精度浮動小数点数 として扱う
+- play-json
+  - BigDecimal (任意精度の小数を表現するクラス)
+
+[1]: https://www.rfc-editor.org/rfc/rfc8259.txt
+[2]: https://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
+
+### (余談) JsNumber は BigDecimal を持つ
+
+- Google Chrome v72.0.3626.121
+
+```javascript
+> Number.MAX_SAFE_INTEGER
+9007199254740991
+> JSON.stringify(9007199254740991)
+"9007199254740991"
+> JSON.stringify(9007199254740999)
+"9007199254741000"
+```
+
+- jq v1.6
+
+```
+$ echo 9007199254740991 | jq .
+9007199254740991
+$ echo 9007199254740999 | jq .
+9007199254741000
+```
+
+- play-json v2.7.2 (with default settings)
+
+```scala
+scala> Json.stringify(JsNumber(9007199254740991L))
+res7: String = 9007199254740991
+scala> Json.stringify(JsNumber(9007199254740999L))
+res8: String = 9007199254740999
+```
+
+---
+
+### JsValue の作成
 
 ---
 
