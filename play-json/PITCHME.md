@@ -43,10 +43,10 @@ personReads.reads(json).get // Person(Alice,21)
 ```
 JSON = null
     or true or false
-    or JSONNumber
-    or JSONString
-    or JSONObject
-    or JSONArray
+    or JSONNumber // e.g. 123, 1.23
+    or JSONString // e.g. "foo"
+    or JSONObject // e.g. {"name": "Alice", "age": 21}
+    or JSONArray  // e.g. [1, "foo", null]
 
 ...
 ```
@@ -138,7 +138,7 @@ res1: String = {"name":"Alice","age":21}
 明瞭だけど冗長な作成方法
 
 ```scala
-// representing {"name": "Alice", "age": 21}
+// {"name": "Alice", "age": 21} という JSON を表現
 val sample: JsValue =
   JsObject(Map(
     "name" -> JsString("Alice"),
@@ -153,7 +153,7 @@ val sample: JsValue =
 より直感的
 
 ```scala
-// representing {"name": "Alice", "age": 21}
+// {"name": "Alice", "age": 21} という JSON を表現
 val sample: JsValue =
   Json.obj(
     "name" -> "Alice",
@@ -216,9 +216,9 @@ val json = Json.parse("""{"name": "Alice", "age": 21}""")
 
 // (JsPath \ "name") のような表記で JSON 上のパスを表現する
 // JsResult は read の成功失敗を表せる型
-scala> val path1: JsPath = JsPath \ "address" \ "city"
+scala> val path1: JsPath = JsPath \ "name"
 path1.asSingleJsResult(sample1)
-res0: JsResult[JsValue] = JsSuccess("Tokyo",)
+res0: JsResult[JsValue] = JsSuccess("Alice",)
 
 scala> val path2: JsPath = JsPath \ "foo"
 path2.asSingleJsResult(sample1) 
@@ -256,16 +256,143 @@ res3: JsResult[String] = JsError(...)
   - Reads: どう読むか
 
 ```scala
+scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
 
+scala> val nameReads1: Reads[String] = (JsPath \ "name").read[String](stringReads1)
+scala> nameReads1.reads(json)
+res0: JsResult[String] = JsSuccess(Alice,/name)
+
+// あるいは stringReads1 は implicit parameter として渡せる
+scala> implicit val stringReads2 = stringReads1
+scala> val nameReads2: Reads[String] = (JsPath \ "name").read[String]
+res1: JsResult[String] = JsSuccess(Alice,/name)
 ```
 
 ---
 
 ### Reads コンビネータ
 
+```scala
+scala> case class Person(name: String, age: Int)
+
+scala> val personReads: Reads[Person1] = (
+     |   (JsPath \ "name").read[String] ~
+     |     (JsPath \ "age").read[Int]
+     | )((name, age) => Person1(name, age))
+
+scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
+
+scala> personReads.reads(json)
+res2: JsResult[Person] = JsSuccess(Person(Alice,21),)
+```
+
+---
+
+### Reads コンビネータ
+
+```scala
+// 1 Reads だけ受け取る以下のようなクラスを考えると
+case class ReadsCombinator1[A](ra: Reads[A]) {
+  def apply[B](f: A => B): Reads[B] = Reads { json =>
+    ra.reads(json) match {
+      case JsSuccess(a, _) =>
+        JsSuccess(f(a))
+      case _ =>
+        JsError("error")
+    }
+  }
+}
+```
+
+```scala
+val nameReads: Reads[String] = ReadsCombinator1(
+  (JsPath \ "name").read[String]
+)(name => name)
+```
+
+---
+
+### Reads コンビネータ
+
+```scala
+// 1 Reads だけ受け取る以下のようなクラスを考えると
+case class ReadsCombinator1[A](ra: Reads[A]) {
+  def apply[B](f: A => B): Reads[B] = ...
+  def ~[B](rb: Reads[B]): ReadsCombinator2[A, B] =
+    ReadsCombinator2(ra, rb)
+}
+
+case class ReadsCombinator2[A, B](ra: Reads[A], rb: Reads[B]) {
+  def apply[C](f: (A, B) => C): Reads[C] = ...
+  def ~[C](rc: Reads[C]): ReadsCombinator3[A, B, C] =
+    ReadsCombinator3(ra, rb, rc)
+}
+```
+
+```scala
+val personReads: Reads[Person1] = (
+  ReadsCombinator1((JsPath \ "name").read[String]) ~
+    (JsPath \ "age").read[Int]
+)((name, age) => Person1(name, age))
+```
+
+---
+
+### Reads コンビネータ
+
+- イメージ的にはこんな感じの作成
+  - 22 引数を取るクラスまで存在する
+- 最初の ReadsCombinator1 を作成する部分は implicit 頼り
+- 実際はコンビネータは Writes, Format と共通化されている
+
 ---
 
 ### Writes (Marshal)
+
+- `A => JsValue` を表現する
+
+```scala
+val personWrites: Writes[Person] = (
+  (JsPath \ "name").write[String] ~
+    (JsPath \ "age").write[Int]
+)(person => (person.name, person.age))
+
+scala> val person = Person("Alice", 21)
+scala> personWrites.writes(person)
+res1: JsValue = {"name":"Alice","age":21}
+```
+
+---
+
+### Format
+
+- Reads と Writes のペア
+
+```
+trait Format[A] extends Writes[A] with Reads[A]
+
+object Format {
+  ...
+  def apply[A](fjs: Reads[A], tjs: Writes[A]): Format[A] = new Format[A] {
+    def reads(json: JsValue) = fjs.reads(json)
+    def writes(o: A) = tjs.writes(o)
+  }
+  ...
+}
+```
+
+---
+
+### case class への自動導出
+
+- マクロで簡潔に書ける
+
+```scala
+case class Person(name: String, age: Int)
+val personReads: Reads[Person] = Json.reads[Person]
+val personWrites: Writes[Person] = Json.writes[Person]
+val personFormat: Format[Person] = Json.format[Person]
+```
 
 ---
 
