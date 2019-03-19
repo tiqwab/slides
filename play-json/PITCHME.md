@@ -24,10 +24,10 @@
 ```scala
 case class Person(name: String, age: Int)
 
-val personReads: Reads[Person1] = (
+val personReads: Reads[Person] = (
   (JsPath \ "name").read[String] ~
     (JsPath \ "age").read[Int]
-)((name, age) => Person1(name, age))
+)((name, age) => Person(name, age))
 
 val json = Json.parse("""{"name": "Alice", "age": 21}""")
 personReads.reads(json).get // Person(Alice,21)
@@ -38,10 +38,10 @@ personReads.reads(json).get // Person(Alice,21)
 ### JSON ライブラリの要素 (と思うもの)
 
 - JSON を表現するデータ型 (**JsValue**)
+- 文字列からのパーズ
+- 文字列化
 - JSON => オブジェクトの変換 (decoding,  **Reads**)
 - オブジェクト => JSON の変換 (encoding, Writes)
-- (文字列からのパーズ)
-- (文字列化)
 
 ---
 
@@ -77,10 +77,10 @@ sealed trait JsValue
 case object JsNull extends JsValue
 // 実際は JsBoolean を継承した JsTrue と JsFalse オブジェクトが存在
 case class JsBoolean(value: Boolean) extends JsValue
-case class JsString(value: String) extends JsValue
 case class JsNumber(value: BigDecimal) extends JsValue
-case class JsArray(value: IndexedSeq[JsValue]) extends JsValue
+case class JsString(value: String) extends JsValue
 case class JsObject(value: Map[String, JsValue]) extends JsValue
+case class JsArray(value: IndexedSeq[JsValue]) extends JsValue
 ```
 
 ---
@@ -173,7 +173,7 @@ String => JsValue
 
 ```scala
 scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
-res0: play.api.libs.json.JsValue = {"name":"Alice","age":21}
+res0: JsValue = {"name":"Alice","age":21}
 ```
 
 JsValue => String
