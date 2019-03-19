@@ -7,19 +7,16 @@
 ### play-json
 
 - Scala 製 JSON ライブラリの一つ
-  - 最新バージョンは 2.7.2 (2019-03-20 現在)
-  - 現在のサービスでは 2.6.10 を使用
-- 2.6 以降 Play Framework からは独立
-- とはいえ Play Framework との組み合わせで使われることが多いはず
+- 現在は Play Framework からは独立したライブラリに
 
 ---
 
 ### play-json
 
 - 何だか最初難しく感じる
-  - combinator あたり?
   - 謎の記号?
   - implicit?
+  - combinator あたり?
 
 ```scala
 case class Person(name: String, age: Int)
@@ -27,11 +24,21 @@ case class Person(name: String, age: Int)
 val personReads: Reads[Person1] = (
   (JsPath \ "name").read[String] ~
     (JsPath \ "age").read[Int]
-)((name, age) => Person1(name, age)) // same as `Person1.apply _`
+)((name, age) => Person1(name, age))
 
 val json = Json.parse("""{"name": "Alice", "age": 21}""")
 personReads.reads(json).get // Person(Alice,21)
 ```
+
+---
+
+### JSON ライブラリの要素
+
+- JSON を表現するデータ型 (**JsValue**)
+- JSON => オブジェクトの変換 (decoding,  **Reads**)
+- オブジェクト => JSON の変換 (encoding, **Writes**)
+- (文字列からのパーズ)
+- (文字列化)
 
 ---
 
@@ -62,15 +69,58 @@ JSON = null
 - 先程の JSON 構文に則った定義
 
 ```scala
-  sealed trait JsValue
+sealed trait JsValue
 
-  case object JsNull extends JsValue
-  // 実際は JsBoolean を継承した JsTrue と JsFalse オブジェクトが存在
-  case class JsBoolean(value: Boolean) extends JsValue
-  case class JsString(value: String) extends JsValue
-  case class JsNumber(value: BigDecimal) extends JsValue
-  case class JsArray(value: IndexedSeq[JsValue]) extends JsValue
-  case class JsObject(value: Map[String, JsValue]) extends JsValue
+case object JsNull extends JsValue
+// 実際は JsBoolean を継承した JsTrue と JsFalse オブジェクトが存在
+case class JsBoolean(value: Boolean) extends JsValue
+case class JsString(value: String) extends JsValue
+case class JsNumber(value: BigDecimal) extends JsValue
+case class JsArray(value: IndexedSeq[JsValue]) extends JsValue
+case class JsObject(value: Map[String, JsValue]) extends JsValue
+```
+
+---
+
+### JsValue の作成
+
+```scala
+// {"name": "Alice", "age": 21} という JSON を表現
+val sample: JsValue =
+  JsObject(Map(
+    "name" -> JsString("Alice"),
+    "age" -> JsNumber(BigDecimal("21"))
+  ))
+```
+
+```scala
+// Json.obj: Seq[(String, JsValueWrapper)] => JsObject
+// implicit conversion を利用して
+val sample: JsValue =
+  Json.obj(
+    "name" -> "Alice",
+    "age" -> 20
+  )
+```
+
+---
+
+### JsValue の作成と implicit
+
+```scala
+// name について明示的な変換にすると
+val sample: JsValue =
+  Json.obj(
+    "name" -> toJsFieldJsValueWrapper("Alice")(StringWrites),
+    "age" -> 20
+  )
+```
+
+```scala
+// in play.api.libs.json.Json
+// 型 A に対して Writes が定義されていれば変換できる
+implicit def toJsFieldJsValueWrapper[T](field: T)(
+  implicit w: Writes[T]): JsValueWrapper = ...
 ```
 
 ---
@@ -80,7 +130,6 @@ JSON = null
 - JSON 内の number をどう処理するか
 - [RFC 88259][1]
   - どう処理するかは実装依存
-  - e.g. IEEE754 倍精度浮動小数点数として扱う
 - [ECMAScript の仕様][2]
   - IEEE754 倍精度浮動小数点数として扱う
 - play-json
@@ -133,63 +182,9 @@ res1: String = {"name":"Alice","age":21}
 
 ---
 
-### JsValue の作成
+### Reads (decoding)
 
-明瞭だけど冗長な作成方法
-
-```scala
-// {"name": "Alice", "age": 21} という JSON を表現
-val sample: JsValue =
-  JsObject(Map(
-    "name" -> JsString("Alice"),
-    "age" -> JsNumber(BigDecimal("21"))
-  ))
-```
-
----
-
-### JsValue の作成
-
-より直感的
-
-```scala
-// {"name": "Alice", "age": 21} という JSON を表現
-val sample: JsValue =
-  Json.obj(
-    "name" -> "Alice",
-    "age" -> 20
-  )
-```
-
----
-
-### JsValue の作成
-
-by implicit conversion
-
-```scala
-import scala.languageFeature.implicitConversions
-
-implicit def stringToJsString(value: String): JsValue =
-  JsString(value)
-
-implicit def intToJsNumber(value: Int): JsValue =
-  JsNumber(BigDecimal(value))
-```
-
-```scala
-val sample: JsValue =
-  Json.obj(
-    "name" -> stringToJsString("Alice"),
-    "age" -> intToJsNumber(20)
-  )
-```
-
-(イメージ。ライブラリの実際の定義とは異なる)
-
----
-
-### Reads (Unmarshal)
+- JSON => 型 A の変換を定義する
 
 ```scala
 case class Person(name: String, age: Int)
@@ -347,7 +342,7 @@ val personReads: Reads[Person1] = (
 
 ---
 
-### Writes (Marshal)
+### Writes (encoding)
 
 - `A => JsValue` を表現する
 
@@ -364,25 +359,6 @@ res1: JsValue = {"name":"Alice","age":21}
 
 ---
 
-### Format
-
-- Reads と Writes のペア
-
-```
-trait Format[A] extends Writes[A] with Reads[A]
-
-object Format {
-  ...
-  def apply[A](fjs: Reads[A], tjs: Writes[A]): Format[A] = new Format[A] {
-    def reads(json: JsValue) = fjs.reads(json)
-    def writes(o: A) = tjs.writes(o)
-  }
-  ...
-}
-```
-
----
-
 ### case class への自動導出
 
 - マクロで簡潔に書ける
@@ -391,7 +367,6 @@ object Format {
 case class Person(name: String, age: Int)
 val personReads: Reads[Person] = Json.reads[Person]
 val personWrites: Writes[Person] = Json.writes[Person]
-val personFormat: Format[Person] = Json.format[Person]
 ```
 
 ---
