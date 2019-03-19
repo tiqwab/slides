@@ -7,7 +7,10 @@
 ### play-json
 
 - Scala 製 JSON ライブラリの一つ
-- 現在は Play Framework からは独立したライブラリに
+- 現在は Play Framework 本体から独立
+- [awesome-scala][1] 内 star 数で 4 番目ぐらい
+
+[1]: https://github.com/lauris/awesome-scala#json
 
 ---
 
@@ -32,11 +35,11 @@ personReads.reads(json).get // Person(Alice,21)
 
 ---
 
-### JSON ライブラリの要素
+### JSON ライブラリの要素 (と思うもの)
 
 - JSON を表現するデータ型 (**JsValue**)
 - JSON => オブジェクトの変換 (decoding,  **Reads**)
-- オブジェクト => JSON の変換 (encoding, **Writes**)
+- オブジェクト => JSON の変換 (encoding, Writes)
 - (文字列からのパーズ)
 - (文字列化)
 
@@ -128,7 +131,7 @@ implicit def toJsFieldJsValueWrapper[T](field: T)(
 ### (余談) JsNumber は BigDecimal を持つ
 
 - JSON 内の number をどう処理するか
-- [RFC 88259][1]
+- [RFC 8259][1]
   - どう処理するかは実装依存
 - [ECMAScript の仕様][2]
   - IEEE754 倍精度浮動小数点数として扱う
@@ -184,15 +187,15 @@ res1: String = {"name":"Alice","age":21}
 
 ### Reads (decoding)
 
-- JSON => 型 A の変換を定義する
+- JsValue => 型 A の変換を表現する
 
 ```scala
 case class Person(name: String, age: Int)
 
-val personReads: Reads[Person1] = (
+val personReads: Reads[Person] = (
   (JsPath \ "name").read[String] ~
     (JsPath \ "age").read[Int]
-)((name, age) => Person1(name, age)) // same as `Person1.apply _`
+)((name, age) => Person(name, age)) // same as `Person1.apply _`
 
 val json = Json.parse("""{"name": "Alice", "age": 21}""")
 personReads.reads(json).get // Person(Alice,21)
@@ -204,7 +207,7 @@ personReads.reads(json).get // Person(Alice,21)
 
 ---
 
-### JsPath
+### (JsPath \ "name")
 
 ```scala
 val json = Json.parse("""{"name": "Alice", "age": 21}""")
@@ -212,34 +215,12 @@ val json = Json.parse("""{"name": "Alice", "age": 21}""")
 // (JsPath \ "name") のような表記で JSON 上のパスを表現する
 // JsResult は read の成功失敗を表せる型
 scala> val path1: JsPath = JsPath \ "name"
-path1.asSingleJsResult(sample1)
+path1.asSingleJsResult(json)
 res0: JsResult[JsValue] = JsSuccess("Alice",)
 
 scala> val path2: JsPath = JsPath \ "foo"
-path2.asSingleJsResult(sample1) 
+path2.asSingleJsResult(json) 
 res1: JsResult[JsValue] = JsError(...)
-```
-
----
-
-### Reads[A]
-
-```scala
-// Reads[A] は `JsValue => JsResult[A]` という関数を表す
-val stringReads: Reads[String] = Reads { json =>
-  json match { // 冗長なパターンマッチだけどわかりやすく
-    case JsString(string) => JsSuccess(string, JsPath())
-    case _                => JsError("error")
-  }
-}
-```
-
-```scala
-scala> stringReads.reads(JsString("foo"))
-res2: JsResult[String] = JsSuccess(foo,)
-
-scala> stringReads1.reads(JsNumber(1))
-res3: JsResult[String] = JsError(...)
 ```
 
 ---
@@ -247,20 +228,19 @@ res3: JsResult[String] = JsError(...)
 ### JsPath#reads
 
 - `(JsPath \ "name").read[String]`
-  - JsPath: どこを読むか
-  - Reads: どう読むか
+  - `JsPath` : どこを読むか
+  - `read[A]` : どう読むか
+    - `Reads[A]` が必要
 
 ```scala
-scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
+val json = Json.parse("""{"name": "Alice", "age": 21}""")
+val nameReads1: Reads[String] =
+  (JsPath \ "name").read[String]
+```
 
-scala> val nameReads1: Reads[String] = (JsPath \ "name").read[String](stringReads1)
+```scala
 scala> nameReads1.reads(json)
 res0: JsResult[String] = JsSuccess(Alice,/name)
-
-// あるいは stringReads1 は implicit parameter として渡せる
-scala> implicit val stringReads2 = stringReads1
-scala> val nameReads2: Reads[String] = (JsPath \ "name").read[String]
-res1: JsResult[String] = JsSuccess(Alice,/name)
 ```
 
 ---
@@ -376,3 +356,28 @@ val personWrites: Writes[Person] = Json.writes[Person]
 - [README of tiqwab/slides/play-json][1]
 
 [1]: https://github.com/tiqwab/slides/tree/master/play-json
+
+---
+
+---
+
+### Reads[A]
+
+```scala
+// Reads[A] は `JsValue => JsResult[A]` という関数を表す
+val stringReads: Reads[String] = Reads { json =>
+  json match { // 冗長なパターンマッチだけどわかりやすく
+    case JsString(string) => JsSuccess(string, JsPath())
+    case _                => JsError("error")
+  }
+}
+```
+
+```scala
+scala> stringReads.reads(JsString("foo"))
+res2: JsResult[String] = JsSuccess(foo,)
+
+scala> stringReads1.reads(JsNumber(1))
+res3: JsResult[String] = JsError(...)
+```
+
