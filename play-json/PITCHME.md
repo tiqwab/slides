@@ -202,6 +202,47 @@ implicit object StringReads extends Reads[String] {
 
 ---
 
+### JsPath#reads
+
+- `JsPath` : どこを読むか
+- `read[A]` : どう読むか (渡す Reads で指定)
+
+```scala
+val json = Json.parse("""{"name": "Alice", "age": 21}""")
+
+// def read[T](implicit r: Reads[T]): Reads[T]
+val name1Reads: Reads[String] =
+  (JsPath \ "name").read[String]
+```
+
+```scala
+scala> name1Reads.reads(json)
+res0: JsResult[String] = JsSuccess(Alice,/name)
+```
+
+---
+
+### JsPath#reads
+
+- `JsPath` : どこを読むか
+- `read[A]` : どう読むか (渡す Reads で指定)
+
+```scala
+case class Name(value: String)
+implicit val nameReads: Reads[Name] = StringReads.map(Name.apply)
+
+// def read[T](implicit r: Reads[T]): Reads[T]
+val name2Reads: Reads[Name] =
+  (JsPath \ "name").read[Name]
+```
+
+```scala
+scala> name2Reads.reads(json)
+res1: JsResult[Name] = JsSuccess(Name(Alice),/name)
+```
+
+---
+
 ### Reads コンビネータ
 
 - Reads 同士を組み合わせてより複雑な Reads を作成する
@@ -216,66 +257,6 @@ val personReads: Reads[Person] = (
 
 val json = Json.parse("""{"name": "Alice", "age": 21}""")
 personReads.reads(json).get // Person(Alice,21)
-```
-
-- `(JsPath \ "name")`
-- `(JsPath \ "name").read[String]`
-- combinator (`~`)
-
----
-
-### (JsPath \ "name")
-
-```scala
-val json = Json.parse("""{"name": "Alice", "age": 21}""")
-
-// (JsPath \ "name") のような表記で JSON 上のパスを表現する
-// JsResult は read の成功失敗を表せる型
-scala> val path1: JsPath = JsPath \ "name"
-path1.asSingleJsResult(json)
-res0: JsResult[JsValue] = JsSuccess("Alice",)
-
-scala> val path2: JsPath = JsPath \ "foo"
-path2.asSingleJsResult(json) 
-res1: JsResult[JsValue] = JsError(...)
-```
-
----
-
-### JsPath#reads
-
-- `(JsPath \ "name").read[String]`
-  - `JsPath` : どこを読むか
-  - `read[A]` : どう読むか
-    - `Reads[A]` が必要
-
-```scala
-val json = Json.parse("""{"name": "Alice", "age": 21}""")
-val nameReads1: Reads[String] =
-  (JsPath \ "name").read[String]
-```
-
-```scala
-scala> nameReads1.reads(json)
-res0: JsResult[String] = JsSuccess(Alice,/name)
-```
-
----
-
-### Reads コンビネータ
-
-```scala
-scala> case class Person(name: String, age: Int)
-
-scala> val personReads: Reads[Person1] = (
-     |   (JsPath \ "name").read[String] ~
-     |     (JsPath \ "age").read[Int]
-     | )((name, age) => Person1(name, age))
-
-scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
-
-scala> personReads.reads(json)
-res2: JsResult[Person] = JsSuccess(Person(Alice,21),)
 ```
 
 ---
@@ -378,6 +359,10 @@ val personWrites: Writes[Person] = Json.writes[Person]
 
 ---
 
+---
+
+---
+
 ### Reads[A]
 
 ```scala
@@ -398,3 +383,20 @@ scala> stringReads1.reads(JsNumber(1))
 res3: JsResult[String] = JsError(...)
 ```
 
+---
+
+### (JsPath \ "name")
+
+```scala
+val json = Json.parse("""{"name": "Alice", "age": 21}""")
+
+// (JsPath \ "name") のような表記で JSON 上のパスを表現する
+// JsResult は read の成功失敗を表せる型
+scala> val path1: JsPath = JsPath \ "name"
+path1.asSingleJsResult(json)
+res0: JsResult[JsValue] = JsSuccess("Alice",)
+
+scala> val path2: JsPath = JsPath \ "foo"
+path2.asSingleJsResult(json) 
+res1: JsResult[JsValue] = JsError(...)
+```
