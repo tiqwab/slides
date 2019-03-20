@@ -187,7 +187,24 @@ res1: String = {"name":"Alice","age":21}
 
 ### Reads (decoding)
 
-- JsValue => 型 A の変換を表現する
+- JsValue => JsResult[A] の変換を表現する
+- JsResult で変換の成功失敗を表現する
+
+```scala
+// in play.api.libs.json.DefaultReads
+implicit object StringReads extends Reads[String] {
+  def reads(json: JsValue): JsResult[String] = json match {
+    case JsString(s) => JsSuccess(s)
+    case _ => JsError(...)
+  }
+}
+```
+
+---
+
+### Reads コンビネータ
+
+- Reads 同士を組み合わせてより複雑な Reads を作成する
 
 ```scala
 case class Person(name: String, age: Int)
