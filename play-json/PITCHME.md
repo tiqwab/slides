@@ -229,7 +229,8 @@ res0: JsResult[String] = JsSuccess(Alice,/name)
 
 ```scala
 case class Name(value: String)
-implicit val nameReads: Reads[Name] = StringReads.map(Name.apply)
+implicit val nameReads: Reads[Name] =
+  StringReads.map(Name.apply)
 
 // def read[T](implicit r: Reads[T]): Reads[T]
 val name2Reads: Reads[Name] =
@@ -245,7 +246,8 @@ res1: JsResult[Name] = JsSuccess(Name(Alice),/name)
 
 ### Reads コンビネータ
 
-- Reads 同士を組み合わせてより複雑な Reads を作成する
+- Reads 同士の組み合わせ
+  - より複雑な Reads を作成する
 
 ```scala
 case class Person(name: String, age: Int)
@@ -303,10 +305,10 @@ case class ReadsCombinator2[A, B](ra: Reads[A], rb: Reads[B]) {
 ```
 
 ```scala
-val personReads: Reads[Person1] = (
+val personReads: Reads[Person] = (
   ReadsCombinator1((JsPath \ "name").read[String]) ~
     (JsPath \ "age").read[Int]
-)((name, age) => Person1(name, age))
+)((name, age) => Person(name, age))
 ```
 
 ---
@@ -316,7 +318,7 @@ val personReads: Reads[Person1] = (
 - イメージ的にはこんな感じの作成
   - 22 引数を取るクラスまで存在する
 - 最初の ReadsCombinator1 を作成する部分は implicit 頼り
-- 実際はコンビネータは Writes, Format と共通化されている
+- 実際のコンビネータは Writes 等と共通化されている
 
 ---
 
@@ -354,49 +356,3 @@ val personWrites: Writes[Person] = Json.writes[Person]
 - [README of tiqwab/slides/play-json][1]
 
 [1]: https://github.com/tiqwab/slides/tree/master/play-json
-
----
-
----
-
----
-
----
-
-### Reads[A]
-
-```scala
-// Reads[A] は `JsValue => JsResult[A]` という関数を表す
-val stringReads: Reads[String] = Reads { json =>
-  json match { // 冗長なパターンマッチだけどわかりやすく
-    case JsString(string) => JsSuccess(string, JsPath())
-    case _                => JsError("error")
-  }
-}
-```
-
-```scala
-scala> stringReads.reads(JsString("foo"))
-res2: JsResult[String] = JsSuccess(foo,)
-
-scala> stringReads1.reads(JsNumber(1))
-res3: JsResult[String] = JsError(...)
-```
-
----
-
-### (JsPath \ "name")
-
-```scala
-val json = Json.parse("""{"name": "Alice", "age": 21}""")
-
-// (JsPath \ "name") のような表記で JSON 上のパスを表現する
-// JsResult は read の成功失敗を表せる型
-scala> val path1: JsPath = JsPath \ "name"
-path1.asSingleJsResult(json)
-res0: JsResult[JsValue] = JsSuccess("Alice",)
-
-scala> val path2: JsPath = JsPath \ "foo"
-path2.asSingleJsResult(json) 
-res1: JsResult[JsValue] = JsError(...)
-```
