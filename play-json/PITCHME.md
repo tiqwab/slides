@@ -216,14 +216,13 @@ res1: JsResult[String] = JsError(...)
 - `read[A]` : どう読むか (渡す Reads で指定)
 
 ```scala
-val json = Json.parse("""{"name": "Alice", "age": 21}""")
-
 // def read[T](implicit r: Reads[T]): Reads[T]
 val name1Reads: Reads[String] =
   (JsPath \ "name").read[String]
 ```
 
 ```scala
+scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
 scala> name1Reads.reads(json)
 res0: JsResult[String] = JsSuccess(Alice,/name)
 ```
@@ -236,9 +235,9 @@ res0: JsResult[String] = JsSuccess(Alice,/name)
 - `read[A]` : どう読むか (渡す Reads で指定)
 
 ```scala
+// Name という Value Object に Reads を定義
 case class Name(value: String)
-implicit val nameReads: Reads[Name] =
-  StringReads.map(Name.apply)
+implicit val nameReads: Reads[Name] = StringReads.map(Name.apply)
 
 // def read[T](implicit r: Reads[T]): Reads[T]
 val name2Reads: Reads[Name] =
@@ -246,6 +245,7 @@ val name2Reads: Reads[Name] =
 ```
 
 ```scala
+scala> val json = Json.parse("""{"name": "Alice", "age": 21}""")
 scala> name2Reads.reads(json)
 res1: JsResult[Name] = JsSuccess(Name(Alice),/name)
 ```
@@ -280,10 +280,11 @@ case class ReadsCombinator1[A](ra: Reads[A]) {
     ra.reads(json) match {
       case JsSuccess(a, _) =>
         JsSuccess(f(a))
-      case _ =>
-        JsError("error")
+      case err @ JsError(_) =>
+        err
     }
   }
+  // ra.map(f) でも同じ
 }
 ```
 
@@ -298,13 +299,13 @@ val nameReads: Reads[String] = ReadsCombinator1(
 ### Reads コンビネータ
 
 ```scala
-// 1 Reads だけ受け取る以下のようなクラスを考えると
 case class ReadsCombinator1[A](ra: Reads[A]) {
   def apply[B](f: A => B): Reads[B] = ...
   def ~[B](rb: Reads[B]): ReadsCombinator2[A, B] =
     ReadsCombinator2(ra, rb)
 }
 
+// 2 Reads 受け取るコンビネータ
 case class ReadsCombinator2[A, B](ra: Reads[A], rb: Reads[B]) {
   def apply[C](f: (A, B) => C): Reads[C] = ...
   def ~[C](rc: Reads[C]): ReadsCombinator3[A, B, C] =
@@ -323,10 +324,10 @@ val personReads: Reads[Person] = (
 
 ### Reads コンビネータ
 
-- イメージ的にはこんな感じの作成
+- イメージ的にはこんな感じ
   - 22 引数を取るクラスまで存在する
 - 最初の ReadsCombinator1 を作成する部分は implicit 頼り
-- 実際のコンビネータは Writes 等と共通化されている
+- 実際のコンビネータは Writes 等と共通
 
 ---
 
