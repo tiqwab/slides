@@ -1,0 +1,4 @@
+- implicit conversion
+- implicit class
+- implicit parameter
+  - 型クラス
