@@ -365,3 +365,31 @@ val personWrites: Writes[Person] = Json.writes[Person]
 - [README of tiqwab/slides/play-json][1]
 
 [1]: https://github.com/tiqwab/slides/tree/master/play-json
+
+---
+
+### (余談) circe
+
+```scala
+case class Person(name: String, age: Int)
+val personDecoder: Decoder[Person] = deriveDecoder[Person]
+val personEncoder: Encoder[Person] = deriveEncoder[Person]
+
+val decoder1: Decoder[Person] = Decoder { json =>
+  for {
+    name <- json.downField("name").as[String]
+    age <- json.downField("age").as[Int]
+  } yield Person(name, age)
+}
+
+val json: Json = Json.obj(
+  "name" -> "Alice".asJson,
+  "age" -> 21.asJson
+)
+
+```
+
+```scala
+scala> json.as[Person](decoder1)
+res0: Result[Person] = Right(Person(Alice,21))
+```
