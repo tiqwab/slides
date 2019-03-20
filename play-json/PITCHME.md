@@ -200,6 +200,14 @@ implicit object StringReads extends Reads[String] {
 }
 ```
 
+```scala
+scala> StringReads.reads(JsString("Alice"))
+res0: JsResult[String] = JsSuccess(Alice,)
+
+scala> StringReads.reads(JsNumber(1))
+res1: JsResult[String] = JsError(...)
+```
+
 ---
 
 ### JsPath#reads
