@@ -51,7 +51,7 @@
 ### scala.math.Ordering
 
 - 型 A に対する大小関係を表現する
-- 定義する側は compare の実装のみを提供すればいい
+- compare の実装のみを提供すればいい
   - x > y なら 負, x == y なら 0, x < y なら 正の整数を返す
 
 ```scala
@@ -97,7 +97,7 @@ res1: Person = Person(Bob,26)
 
 ---
 
-### ソート戦略を変えたい場合
+### 別の大小関係を使いたい場合
 
 - 別の Ordering を提供すればいい
 
@@ -195,7 +195,7 @@ res0: Person = Person("Chris", 20)
 
 ### 回避策
 
-- 別に専用の wrapper を用意してあげればいい
+- 専用の wrapper を用意してあげればいい
 
 ```scala
 case class PersonForOrderedWithName(person: Person)
@@ -248,12 +248,69 @@ scala> (pairMax.a.person, pairMax.b.value) // (Person(Alice,21),3)
 
 ### implicit conversion
 
+- 型 B が求められる箇所に (継承関係にない) 型 A の値を渡す
+  - 型が合わずコンパイルエラー
+- 型 A から型 B への暗黙の型変換が定義されている
+  - 型チェックが通る。コンパイル時に変換処理が追加される
+
+```scala
+// 型 A から型 B への暗黙の型変換
+implicit def fooConversion(x: A): B = ???
+```
+
 ---
 
 ### 例. play-json
 
+- 標準ライブラリの型を JsValue に変換するために使用
+
+```scala
+Json.obj(
+  "name" -> "Alice", // String => JsValueWrapper の型変換
+  "age" -> 20        // Int => JsValueWrapper の型変換
+)
+```
+
 ---
 
 ### 今は昔の JavaConversions
+
+- ただ積極的に使うべきではないという意見が多い
+- 標準ライブラリでも JavaConversions が deprecated に
+
+```scala
+// with scala.collection.JavaConverters
+import scala.collection.JavaConverters._
+val javaList = new java.util.ArrayList[Int]
+javaList.add(1)
+val scalaList: mutable.Buffer[Int] = javaList.asScala
+```
+
+```scala
+// with scala.collection.JavaConversions
+import scala.collection.JavaConversions._
+val javaList = new java.util.ArrayList[Int]
+javaList.add(1)
+val scalaList: mutable.Buffer[Int] = javaList
+```
+
+---
+
+### 今は昔の JavaConversions
+
+- [JavaConversions の罠][1] としてこういうのが
+
+```scala
+import scala.collection.JavaConversions._
+case class Foo(s: String)
+val map: Map[Foo, String] =
+  Map(
+    Foo("a") -> "a",
+    Foo("b") -> "b")
+
+val v = map.get("a") // should be a type error, actually returns null
+```
+
+[1]: https://gist.github.com/xuwei-k/8870ea35c4bb6a4de05c
 
 ---
