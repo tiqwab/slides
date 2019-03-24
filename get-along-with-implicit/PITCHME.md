@@ -275,7 +275,7 @@ Json.obj(
 
 ### 今は昔の JavaConversions
 
-- ただ積極的に使うべきではないという意見が多い
+- ただ積極的に使うべきではないという意見も
 - 標準ライブラリでも JavaConversions が deprecated に
 
 ```scala
@@ -287,7 +287,7 @@ val scalaList: mutable.Buffer[Int] = javaList.asScala
 ```
 
 ```scala
-// with scala.collection.JavaConversions
+// with scala.collection.JavaConversions. this is deprecated
 import scala.collection.JavaConversions._
 val javaList = new java.util.ArrayList[Int]
 javaList.add(1)
