@@ -32,10 +32,14 @@
 [1]: https://people.csail.mit.edu/dnj/teaching/6898/papers/wadler88.pdf
 [2]: http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf
 
+---
+
 ### 継承と型クラス
 
 - 型クラスは操作による分類みたいな
 - そもそも出自が違うので明確に分けれなくても当然かも？
+
+---
 
 ### 型クラスのうれしみ
 
@@ -48,7 +52,7 @@
 
 - 型 A に対する大小関係を表現する
 - 定義する側は compare の実装のみを提供すればいい
-  - x > y なら 負, x == y なら 0, x < y なら 正の整数 を返す
+  - x > y なら 負, x == y なら 0, x < y なら 正の整数を返す
 
 ```scala
 // 簡略化した定義
@@ -65,10 +69,11 @@ trait Ordering[T] {
 case class Person(name: String, age: Int)
 
 // age に基づく Ordering
-val personAgeOrdering: Ordering[Person] = new Ordering[Person] {
-  override def compare(x: Person, y: Person): Int =
-    x.age.compareTo(y.age)
-}
+val personAgeOrdering: Ordering[Person] =
+  new Ordering[Person] {
+    override def compare(x: Person, y: Person): Int =
+      x.age.compareTo(y.age)
+  }
 ```
 
 ---
@@ -76,7 +81,7 @@ val personAgeOrdering: Ordering[Person] = new Ordering[Person] {
 ### Ordering 使用例
 
 ```scala
-val personAgeOrdering: Ordering[Person] = ...
+val personAgeOrdering: Ordering[Person] = ... // 前 slide
 val alice = Person("Alice", 21)
 val bob = Person("Bob", 26)
 val chris = Person("Chris", 20)
@@ -97,11 +102,11 @@ res1: Person = Person(Bob,26)
 - 別の Ordering を提供すればいい
 
 ```scala
-val personNameOrdering: Ordering[Person] = new Ordering[Person] {
-  override def compare(x: Person, y: Person): Int =
-    // implicitly[Ordering[String]].compare(x.name, y.name)
-    x.name.compareTo(y.name)
-}
+val personNameOrdering: Ordering[Person] =
+  new Ordering[Person] {
+    override def compare(x: Person, y: Person): Int =
+      x.name.compareTo(y.name)
+  }
 ```
 
 ```scala
@@ -118,22 +123,24 @@ res0: Person = Person("Chris", 20)
   - いわゆる型クラス的な使い方
 
 ```scala
-scala> implicit val ordering: Ordering[Person] = personAgeOrdering
+scala> implicit val ordering: Ordering[Person] =
+     |   personAgeOrdering
 scala> people.max
 res0: Person = Person(Bob,26)
 ```
 
 ---
 
-### implicit が便利な場合 (やや私見)
+### implicit が便利な場合 (私見?)
 
 - 主要な定義が 1 通りになる場合
 - ある型クラスの定義から更に別の型クラスを定義できる場合
 
 ```scala
-// Tuple2 の Ordering を _1, _2 の順で比較することにすれば
+// A, B に Ordering が定義されていれば (A, B) にも定義できる
 implicit def orderingTuple2[A, B](
-  implicit ordA: Ordering[A], ordB: Ordering[B]): Ordering[(A, B)] =
+    implicit ordA: Ordering[A],
+    ordB: Ordering[B]): Ordering[(A, B)] =
   new Ordering[(A, B)] {
     override def compare(x: (A, B), y: (A, B)): Int = {
       val res = ordA.compare(x._1, y._1)
@@ -145,8 +152,7 @@ implicit def orderingTuple2[A, B](
 
 ```scala
 scala> val peopleStringPair = Seq((alice, "3"), (alice, "2"), (alice, "1"))
-scala> people.max
-res0: (Person, String) = (Person(Alice,21),3)
+scala> people.max // (Person(Alice,21),3)
 ```
 
 ---
