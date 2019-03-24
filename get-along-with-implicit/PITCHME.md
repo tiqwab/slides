@@ -144,8 +144,7 @@ implicit def orderingTuple2[A, B](
   new Ordering[(A, B)] {
     override def compare(x: (A, B), y: (A, B)): Int = {
       val res = ordA.compare(x._1, y._1)
-      if (res != 0) res
-      else ordB.compare(x._2, y._2)
+      if (res != 0) res else ordB.compare(x._2, y._2)
     }
   }
 ```
@@ -159,8 +158,8 @@ scala> people.max // (Person(Alice,21),3)
 
 ### 継承によるアプローチとの比較
 
-- scala.math.Ordered[A] も同様な compare を提供する
-- こちらは型 A に継承させて大小の比較が可能なことを表現する
+- scala.math.Ordered[A] も大小関係を表現
+- こちらは型 A に継承させる必要がある
 
 ```scala
 // 簡略化した定義
@@ -178,8 +177,10 @@ trait Ordered[A] extends Any with java.lang.Comparable[A] {
 
 ```scala
 // age に基づく定義
-case class Person(name: String, age: Int) extends Ordered[Person] {
-  override def compare(that: Person): Int = age.compareTo(that.age)
+case class Person(name: String, age: Int)
+    extends Ordered[Person] {
+  override def compare(that: Person): Int =
+    age.compareTo(that.age)
 }
 ```
 
@@ -221,17 +222,15 @@ scala> people.map(PersonForOrderedWithName.apply).max.person
 
 ### 回避策
 
-- Tuple2 に対する Ordered の作成も明示的にすればいい
+- Tuple2 に対する定義は多分こんな感じ
 - コード各部で何をしているかは明瞭だと思う
 - ただ全体として読みやすいかは？
 
 ```scala
-case class ToPairOrdered[A <: Ordered[A], B <: Ordered[B]](a: A, b: B)
-    extends Ordered[ToPairOrdered[A, B]] {
+case class ToPairOrdered[A <: Ordered[A], B <: Ordered[B]](
+    a: A, b: B) extends Ordered[ToPairOrdered[A, B]] {
   override def compare(that: ToPairOrdered[A, B]): Int = {
-    val res = a.compareTo(that.a)
-    if (res != 0) res
-    else b.compareTo(that.b)
+    // 省略
   }
 }
 ```
@@ -242,8 +241,7 @@ scala> val peopleStringMax = peopleStringPair.map {
      |   case (x, y) =>
      |     ToPairOrdered(PersonForOrderedWithName(x), ToStringOrdered(y))
      | }.max
-val res = (peopleStringMax.a.person, peopleStringMax.b.value)
-res0: (Person, String) = (Person(Alice,21),3)
+scala> (peopleStringMax.a.person, peopleStringMax.b.value) // (Person(Alice,21),3)
 ```
 
 ---
