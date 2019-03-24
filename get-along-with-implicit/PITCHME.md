@@ -223,8 +223,7 @@ scala> people.map(PersonForOrderedWithName.apply).max.person
 ### 回避策
 
 - Tuple2 に対する定義は多分こんな感じ
-- コード各部で何をしているかは明瞭だと思う
-- ただ全体として読みやすいかは？
+- 個人的にはわかりやすいが読みにくい
 
 ```scala
 case class ToPairOrdered[A <: Ordered[A], B <: Ordered[B]](
@@ -236,12 +235,13 @@ case class ToPairOrdered[A <: Ordered[A], B <: Ordered[B]](
 ```
 
 ```scala
-// val peopleStringPair = Seq((alice, "3"), (alice, "2"), (alice, "1"))
-scala> val peopleStringMax = peopleStringPair.map {
+// val pairs = Seq((alice, "3"), (alice, "2"), (alice, "1"))
+scala> val pairMax = pairs.map {
      |   case (x, y) =>
-     |     ToPairOrdered(PersonForOrderedWithName(x), ToStringOrdered(y))
+     |     ToPairOrdered(PersonForOrderedWithName(x),
+                         ToStringOrdered(y))
      | }.max
-scala> (peopleStringMax.a.person, peopleStringMax.b.value) // (Person(Alice,21),3)
+scala> (pairMax.a.person, pairMax.b.value) // (Person(Alice,21),3)
 ```
 
 ---
