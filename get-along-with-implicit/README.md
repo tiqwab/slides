@@ -1,3 +1,7 @@
+### Slide
+
+https://gitpitch.com/tiqwab/slides?p=get-along-with-implicit
+
 ### implicit 概要
 
 - [Implicit - Scala研修テキスト][6]
