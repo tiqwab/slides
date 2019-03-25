@@ -2,13 +2,15 @@
 
 https://gitpitch.com/tiqwab/slides?p=get-along-with-implicit
 
-### implicit 概要
+### References
+
+#### implicit 概要
 
 - [Implicit - Scala研修テキスト][6]
 - [Scalaでimplicits呼ぶなキャンペーン][7]
 - [Implicit 入門][8]
 
-### 型クラス
+#### 型クラス
 
 - [型クラスに関するここ数日の議論][1]
   - @cocoatomo さん: 同じ性質を持ったオブジェクトを集めたものがOOPでの「クラス」ですが、同様に同じ性質を持った型を集めたものが「型クラス」です

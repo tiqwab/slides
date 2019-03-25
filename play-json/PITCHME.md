@@ -393,3 +393,11 @@ val json: Json = Json.obj(
 scala> json.as[Person](decoder1)
 res0: Result[Person] = Right(Person(Alice,21))
 ```
+
+---
+
+### 資料まとめ
+
+- [README of tiqwab/slides/play-json][1]
+
+[1]: https://github.com/tiqwab/slides/tree/master/get-along-with-implicit
