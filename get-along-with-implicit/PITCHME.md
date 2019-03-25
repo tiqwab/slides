@@ -6,45 +6,94 @@
 
 ### implicit 種類
 
+- implicit class
+  - 拡張メソッド
+- implicit parameter
+  - 引き回すパラメータの省略
+  - 型クラス
+- implicit conversion
+
 ---
 
 ### implicit class
+
+- 拡張メソッドを実現するための機能
+
+```scala
+implicit class RichInt(value: Int) {
+  def factorial: Int = {
+    def loop(x: Int, acc: Int): Int =
+      if (x <= 0) acc
+      else loop(x - 1, x * acc)
+    loop(value, 1)
+  }
+}
+
+```
+
+```scala
+scala> 5.factorial
+120
+```
 
 ---
 
 ### implicit paramter
 
+- 引き回すパラメータの省略
+- 型クラス
+
 ---
 
 ### 引き回すパラメータの省略
 
----
+- 例. DB アクセスに使用するコネクション
 
-### 型クラスとして
-
-- 操作による型の分類
-  - 多分代数的な概念と相性がいいのはこれのおかげか？
-- Strategy パターン的な
-- アドホック多相の実現方法の 1 つ ([これ][1] や [これ][2] を読む感じ)
-- [これ][2] の CONCEPT パターンを元に説明するのがわかりやすそう
-- Ordered ではクラス定義自体を触れる必要があるし、クラスに 1 つしか定義できない
-
-[1]: https://people.csail.mit.edu/dnj/teaching/6898/papers/wadler88.pdf
-[2]: http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf
-
----
-
-### 継承と型クラス
-
-- 型クラスは操作による分類みたいな
-- そもそも出自が違うので明確に分けれなくても当然かも？
+```scala
+case class Person(name: String, age: Int)
+case class MyConnection()
+class MyRepository() {
+  def findById(id: Long)(
+    implicit ctx: MyConnection): Option[Person] = ???
+  def create(entity: Person)(
+    implicit ctx: MyConnection): Unit = ???
+}
+```
 
 ---
 
-### 型クラスのうれしみ
+### 引き回すパラメータの省略
 
-- implicit に渡さなくても明示的に渡しても別にいい
-- ただコンパイル時に定義を導出できるのは強力
+```scala
+// without implicit
+val repo = new MyRepository()
+val conn: MyConnection = getConnection()
+repo.findById(1L)(conn)
+repo.create(Person("Alice", 21))(conn)
+```
+
+```scala
+// with implicit
+val repo = new MyRepository()
+implicit val conn: MyConnection = getConnection()
+repo.findById(1L)
+repo.create(Person("Alice", 21))
+```
+
+---
+
+### 引き回すパラメータの省略
+
+- ちょくちょく使われている
+- 利用パターンは割と限定されている
+  - それゆえに初見に優しくない気はするが
+
+---
+
+### implicit paramter
+
+- 引き回すパラメータの省略
+- 型クラス
 
 ---
 
@@ -223,7 +272,7 @@ scala> people.map(PersonForOrderedWithName.apply).max.person
 ### 回避策
 
 - Tuple2 に対する定義は多分こんな感じ
-- 個人的にはわかりやすいが読みにくい
+- 何がしたいか掴みづらいと思う
 
 ```scala
 case class ToPairOrdered[A <: Ordered[A], B <: Ordered[B]](
@@ -239,7 +288,7 @@ case class ToPairOrdered[A <: Ordered[A], B <: Ordered[B]](
 scala> val pairMax = pairs.map {
      |   case (x, y) =>
      |     ToPairOrdered(PersonForOrderedWithName(x),
-                         ToStringOrdered(y))
+     |                   ToStringOrdered(y))
      | }.max
 scala> (pairMax.a.person, pairMax.b.value) // (Person(Alice,21),3)
 ```
@@ -250,8 +299,8 @@ scala> (pairMax.a.person, pairMax.b.value) // (Person(Alice,21),3)
 
 - 型 B が求められる箇所に (継承関係にない) 型 A の値を渡す
   - 型が合わずコンパイルエラー
-- 型 A から型 B への暗黙の型変換が定義されている
-  - 型チェックが通る。コンパイル時に変換処理が追加される
+- 型 A から型 B への暗黙の型変換が定義があれば
+  - 型チェックが通る。コンパイル時に変換処理が追加される (はず)
 
 ```scala
 // 型 A から型 B への暗黙の型変換
@@ -275,7 +324,7 @@ Json.obj(
 
 ### 今は昔の JavaConversions
 
-- ただ積極的に使うべきではないという意見も
+- 暗黙の型変換は積極的に使うべきではないという意見も
 - 標準ライブラリでも JavaConversions が deprecated に
 
 ```scala
@@ -312,5 +361,3 @@ val v = map.get("a") // should be a type error, actually returns null
 ```
 
 [1]: https://gist.github.com/xuwei-k/8870ea35c4bb6a4de05c
-
----
