@@ -12,6 +12,7 @@
   - 引き回すパラメータの省略
   - 型クラス
 - implicit conversion
+  - 存在を知っておけばいい
 
 ---
 
@@ -50,6 +51,7 @@ scala> 5.factorial
 - 例. DB アクセスに使用するコネクション
 
 ```scala
+// 例えばこんなリポジトリがあるとして
 case class Person(name: String, age: Int)
 case class MyConnection()
 class MyRepository() {
@@ -101,7 +103,9 @@ repo.create(Person("Alice", 21))
 
 - 型 A に対する大小関係を表現する
 - compare の実装のみを提供すればいい
-  - x > y なら 負, x == y なら 0, x < y なら 正の整数を返す
+  - x > y なら 負の整数を返す
+  - x == y なら 0 を返す
+  - x < y なら 正の整数を返す
 
 ```scala
 // 簡略化した定義
@@ -146,7 +150,7 @@ res1: Person = Person(Bob,26)
 
 ---
 
-### 別の大小関係を使いたい場合
+### 別の定義を使いたい場合
 
 - 別の Ordering を提供すればいい
 
@@ -298,8 +302,8 @@ scala> (pairMax.a.person, pairMax.b.value) // (Person(Alice,21),3)
 ### implicit conversion
 
 - 型 B が求められる箇所に (継承関係にない) 型 A の値を渡す
-  - 型が合わずコンパイルエラー
-- 型 A から型 B への暗黙の型変換が定義があれば
+  - 通常型が合わずコンパイルエラー
+- 型 A から型 B への暗黙の型変換定義があれば
   - 型チェックが通る。コンパイル時に変換処理が追加される (はず)
 
 ```scala
@@ -309,9 +313,10 @@ implicit def fooConversion(x: A): B = ???
 
 ---
 
-### 例. play-json
+### 暗黙の型変換利用例
 
-- 標準ライブラリの型を JsValue に変換するために使用
+- play-json
+  - 標準ライブラリの型を JsValue に変換
 
 ```scala
 Json.obj(
