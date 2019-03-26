@@ -400,4 +400,4 @@ res0: Result[Person] = Right(Person(Alice,21))
 
 - [README of tiqwab/slides/play-json][1]
 
-[1]: https://github.com/tiqwab/slides/tree/master/get-along-with-implicit
+[1]: https://github.com/tiqwab/slides/tree/master/play-json

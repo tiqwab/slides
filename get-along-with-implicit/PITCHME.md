@@ -103,9 +103,9 @@ repo.create(Person("Alice", 21))
 
 - 型 A に対する大小関係を表現する
 - compare の実装のみを提供すればいい
-  - x > y なら 負の整数を返す
+  - x > y なら 正の整数を返す
   - x == y なら 0 を返す
-  - x < y なら 正の整数を返す
+  - x < y なら 負の整数を返す
 
 ```scala
 // 簡略化した定義
@@ -366,3 +366,10 @@ val v = map.get("a") // should be a type error, actually returns null
 ```
 
 [1]: https://gist.github.com/xuwei-k/8870ea35c4bb6a4de05c
+
+
+### 資料まとめ
+
+- [README of tiqwab/slides/get-along-with-implicit][1]
+
+[1]: https://github.com/tiqwab/slides/tree/master/get-along-with-implicit
