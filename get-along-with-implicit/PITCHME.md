@@ -367,6 +367,7 @@ val v = map.get("a") // should be a type error, actually returns null
 
 [1]: https://gist.github.com/xuwei-k/8870ea35c4bb6a4de05c
 
+---
 
 ### 資料まとめ
 
