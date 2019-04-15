@@ -35,6 +35,16 @@ ref. [General Concepts][1]
     - 3 node with an index
     - 1 台 node が落ちたとき
   - shard が Apache Lucene の 1 インスタンスである、というのは興味あるけどスライドでは触れないほうが良さげ
+- Distributed Document Store
+  - Elasticsearch では document の CRUD リクエストをどの node に投げても良い (というか負荷軽減のために分散させた方がいいぐらい)
+    - 各 node はそのドキュメントが格納される shard がどの node にいるのか知っているので、対象 node にリクエストを forward する
+  - C, U, D リクエストについてはまず primary に変更が適用される
+  - replica にも変更を反映させてからレスポンスを返すみたい
+    - つまりリクエスト側から見れば、成功した場合、primary, replica ともに変更が反映されたことが保証されるということになる
+    - ただこれ [いまは違うのかも][3]。primary に反映されれば replica への反映も待たずレスポンスを返す。実感的にも確かにそう
+    - そしてこれは検索可能とは別の話なはず
+  - R リクエストについては primary, replica に分散して問い合わせる
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
+[3]: https://github.com/elastic/elasticsearch/issues/16728
