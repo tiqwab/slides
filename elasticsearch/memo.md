@@ -44,6 +44,10 @@ ref. [General Concepts][1]
     - ただこれ [いまは違うのかも][3]。primary に反映されれば replica への反映も待たずレスポンスを返す。実感的にも確かにそう
     - そしてこれは検索可能とは別の話なはず
   - R リクエストについては primary, replica に分散して問い合わせる
+- Distributed Search Execution
+  - 受け付けた search リクエストの解決の様子が示されている
+    - リクエストを受け取った node が各 shard の結果を集めるために他の node に問い合わせる
+    - リクエストを受け取った node は各 node からの結果を集めてレスポンスを作る
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
