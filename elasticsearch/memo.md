@@ -77,6 +77,9 @@ ref. [General Concepts][1]
 - Aggregations
   - cardinarity の計算には HyperLogLog という確率論的アルゴリズムが使われている
     - 必ずしも正しい値が返るわけではない
+- Modeling Your Data
+  - primary shard が nodes に均等に分配されていないといけないということはない
+  - 1 index 50 shards と 50 index 1 shard は Elasticsearch 的には同じ話にできる
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
