@@ -74,6 +74,9 @@ ref. [General Concepts][1]
     - id で引っ張るときに translog もチェックしている
   - これだとセグメントがどんどん増えるので、バックグラウンドでセグメントを merge するという処理がある
     - スクロールではある時点の snapshot のようなものを見れるが、そのときには使用しているセグメントが merge されると困るので、そこらへんの確認はされているらしい
+- Aggregations
+  - cardinarity の計算には HyperLogLog という確率論的アルゴリズムが使われている
+    - 必ずしも正しい値が返るわけではない
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
