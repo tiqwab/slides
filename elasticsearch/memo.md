@@ -2,6 +2,20 @@
 
 - 分散型 RESTful 検索、分析エンジン
 
+データ分析基盤構築入門 P.194 より
+
+> - OSS (Apache License v2)
+> - ドキュメント指向
+>   - ドキュメント単位でフィールドの定義ができるため、柔軟なデータの登録ができる
+> - 分散システム
+>   - インデックスを分散して保持し、検索する。スケールアウトを当初から想定した設計
+> - マルチテナント
+>   - 複数のインデックスを登録できる
+> - RESTful な API
+>   - データの操作や設定、監視などの必要な機能が HTTP インタフェースで利用できる
+> - (near) リアルタイム
+>   - (ほぼ) データをリアルタイムで検索できる
+
 ### General Concepts
 
 ref. [General Concepts][1]
@@ -14,7 +28,24 @@ ref. [General Concepts][1]
 - Shards
 - Replicas
 
-### 簡単に CRUD
+1 node 1 shard から徐々に登場人物を増やしていく感じで
+
+### 簡単に CRUD 例
+
+### Document
+
+- field
+- mapping
+
+### master node のお仕事
+
+### data node のお仕事
+
+### (near) リアルタイム
+
+- refresh
+- merge
+- flush
 
 ---
 
@@ -80,6 +111,7 @@ ref. [General Concepts][1]
 - Modeling Your Data
   - primary shard が nodes に均等に分配されていないといけないということはない
   - 1 index 50 shards と 50 index 1 shard は Elasticsearch 的には同じ話にできる
+    - なので例えばログデータを入れるときに 1 日 index とかにする設計は過去データの扱いに気をつければ全然あり
 - [master node のやることの一例][4]
 - [Scale is Not Infinite][5]
 - mapping 多くなりすぎる問題はうちの tag の使い方でもありうる？
