@@ -80,7 +80,15 @@ ref. [General Concepts][1]
 - Modeling Your Data
   - primary shard が nodes に均等に分配されていないといけないということはない
   - 1 index 50 shards と 50 index 1 shard は Elasticsearch 的には同じ話にできる
+- [master node のやることの一例][4]
+- [Scale is Not Infinite][5]
+- mapping 多くなりすぎる問題はうちの tag の使い方でもありうる？
+  - nexted object を本来は使うべき？
+    - これだと Elasticsearch の制限で tag の数は最大 10000 になる
+  - 応急処置としては別 index に逃がすとかはできるのかもしれないけど
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
 [3]: https://github.com/elastic/elasticsearch/issues/16728
+[4]: https://www.elastic.co/guide/en/elasticsearch/guide/current/finite-scale.html
+[5]: https://www.elastic.co/guide/en/elasticsearch/guide/current/finite-scale.html
