@@ -65,7 +65,6 @@ ref. [General Concepts][1]
 - indexing のリクエストを受け付けるのは data のみ
   - master には負荷をかけないのが吉
 
-
 ### (near) リアルタイム
 
 - indexing
@@ -152,6 +151,12 @@ ref. [General Concepts][1]
 
 - indexing のリクエストは master でも data でも受け付けられる
   - ただ負荷をかけたくないと言う意味で master は避けるべきとのこと
+
+---
+
+### 疑問
+
+- 複数 index を持つクラスタの場合、index 毎に master は変わったりしないよね？
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
