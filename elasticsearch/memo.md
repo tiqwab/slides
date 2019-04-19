@@ -30,6 +30,10 @@ ref. [General Concepts][1]
 
 1 node 1 shard から徐々に登場人物を増やしていく感じで
 
+#### 稼働しているシステムの場合
+
+- 計 9 node で 1 index 128 shards, 1 replica
+
 ### 簡単に CRUD 例
 
 ### Document
@@ -39,13 +43,37 @@ ref. [General Concepts][1]
 
 ### master node のお仕事
 
+- cluster state の管理
+  - cluster state 自体は各 node にも渡されるが、変更できるのは master だけ
+  - 例
+    - cluster-level settings
+    - cluster を構成する node の管理 (add, remove)
+    - index settings, mappings, analyzers, warmers, and aliases
+    - shard の割り当て (どの node にいるか)
+
 ### data node のお仕事
+
+- shards (つまり documents) を保存する
+- クエリに応じて自身の shards の検索結果を返す
+
+#### 稼働しているシステムの場合
+
+3 台が master 専用、6 台が data 専用
+
+- master, data は兼任できるが、本番環境では分けるのが推奨される
+- master は 2 台が予備として待機している
+- indexing のリクエストを受け付けるのは data のみ
+  - master には負荷をかけないのが吉
+
 
 ### (near) リアルタイム
 
-- refresh
+- indexing
+  - [はじめての Elasticsearch クラスタ][6] の P19 ぐらいが参考になる
+- refresh と flush
+  - [Elasticsearch: The Definitive Guide][2] の Inside a Shard
+  - [Guide to Refresh and Flush Operations in Elasticsearch][7]
 - merge
-- flush
 
 ---
 
@@ -103,6 +131,7 @@ ref. [General Concepts][1]
   - 検索と違い CRUD は real-time だと言っている
     - これは translog のためと
     - id で引っ張るときに translog もチェックしている
+    - ただ上では 5.x ではそうではなくなっていると言っている人もいるしよくわからん
   - これだとセグメントがどんどん増えるので、バックグラウンドでセグメントを merge するという処理がある
     - スクロールではある時点の snapshot のようなものを見れるが、そのときには使用しているセグメントが merge されると困るので、そこらへんの確認はされているらしい
 - Aggregations
@@ -119,8 +148,15 @@ ref. [General Concepts][1]
     - これだと Elasticsearch の制限で tag の数は最大 10000 になる
   - 応急処置としては別 index に逃がすとかはできるのかもしれないけど
 
+---
+
+- indexing のリクエストは master でも data でも受け付けられる
+  - ただ負荷をかけたくないと言う意味で master は避けるべきとのこと
+
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
 [3]: https://github.com/elastic/elasticsearch/issues/16728
 [4]: https://www.elastic.co/guide/en/elasticsearch/guide/current/finite-scale.html
 [5]: https://www.elastic.co/guide/en/elasticsearch/guide/current/finite-scale.html
+[6]: https://www.slideshare.net/snuffkin/elasticsearch-107454226
+[7]: https://qbox.io/blog/refresh-flush-operations-elasticsearch-guide
