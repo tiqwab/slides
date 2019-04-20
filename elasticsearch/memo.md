@@ -38,8 +38,14 @@ ref. [General Concepts][1]
 
 ### Document
 
-- field
 - mapping
+  - field types (in v7.0)
+    - text
+      - 全文検索したい文字列
+    - keyword
+      - v2.4 でいう `not_analyzed` な string
+    - long
+    - date
 
 ### master node のお仕事
 

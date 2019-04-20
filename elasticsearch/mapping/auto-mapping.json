@@ -1,0 +1,23 @@
+{
+  "index1": {
+    "mappings": {
+      "properties": {
+        "age": {
+          "type": "long"
+        },
+        "name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "registered_at": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}
