@@ -1,0 +1,17 @@
+{
+  "index1": {
+    "settings": {
+      "index": {
+        "refresh_interval": "30s",
+        "number_of_shards": "3",
+        "provided_name": "index1",
+        "creation_date": "1555723945152",
+        "number_of_replicas": "0",
+        "uuid": "3lJEo2YZQWmNzSKjZKDNFw",
+        "version": {
+          "created": "7000099"
+        }
+      }
+    }
+  }
+}
