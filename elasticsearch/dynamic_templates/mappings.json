@@ -1,0 +1,38 @@
+{
+  "index1": {
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "string-double-tags": {
+            "path_match": "tag.*",
+            "mapping": {
+              "fields": {
+                "double": {
+                  "type": "double"
+                }
+              },
+              "type": "keyword"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "age": {
+          "type": "long"
+        },
+        "name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "registered_at": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}
