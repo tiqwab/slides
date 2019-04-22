@@ -41,7 +41,6 @@ ref. [General Concepts][1]
 - mapping
   - field types (in v7.0)
     - text
-      - 全文検索したい文字列
     - keyword
       - v2.4 でいう `not_analyzed` な string
     - long
@@ -163,6 +162,13 @@ ref. [General Concepts][1]
 ### 疑問
 
 - 複数 index を持つクラスタの場合、index 毎に master は変わったりしないよね？
+
+### TODO
+
+- [ ] 未作成スライドの対応
+- [ ] topics の追加
+- [ ] 冗長性について触れるために node が落ちたときの例を入れる？
+- [ ] 参考元の整理
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
