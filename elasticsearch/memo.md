@@ -168,7 +168,7 @@ ref. [General Concepts][1]
 - [x] 未作成スライドの対応
 - [x] topics の追加
 - [ ] 冗長性について触れるために node が落ちたときの例を入れる？
-- [ ] 参考元の整理
+- [x] 参考元の整理
 
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html

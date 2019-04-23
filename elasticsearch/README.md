@@ -1,5 +1,7 @@
 ### Slide
 
+- [Elasticsearch の基礎][4]
+
 ### References
 
 - [Elasticseach Document][1]
@@ -13,4 +15,4 @@
 [1]: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html
 [3]: https://www.slideshare.net/snuffkin/elasticsearch-107454226
-
+[4]: https://speakerdeck.com/tiqwab/get-started-with-elasticsearch
