@@ -6,13 +6,13 @@
 
 ### おさらい
 
-![Cluster][elasticsearch-tips/assets/images/cluster.PNG]
+![Cluster](elasticsearch-tips/assets/images/cluster.PNG)
 
 ---
 
 ### おさらい
 
-![Mapping][elasticsearch-tips/assets/images/mapping.PNG]
+![Mapping](elasticsearch-tips/assets/images/mapping.PNG)
 
 ---
 
