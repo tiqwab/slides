@@ -2,8 +2,7 @@
   text-transform: none;
 }
 
-.reveal section img {
-  display: block;
+.slides img {
   margin: 0 auto;
   border: 1px solid #eee;
 }
