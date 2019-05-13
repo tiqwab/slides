@@ -29,7 +29,7 @@
 ### 文字列の完全一致検索をしたい
 
 - (v2.x の) デフォルトでは string 型は analyze される
-  - analyze 処理で tokenize されてしまう
+  - @size[12px](analyze 処理で tokenize されてしまう)
   - IFA で検索しても引っかからない...みたいになる
 - 全文検索したいフィールドでないなら `not_analyzed` にするべき
 
@@ -49,6 +49,8 @@ $ curl http://localhost:9200/index1/_mappings
         }
         ...
 ```
+
+---
 
 ### 文字列の完全一致検索をしたい
 
