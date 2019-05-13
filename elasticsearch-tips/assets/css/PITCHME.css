@@ -2,7 +2,7 @@
   text-transform: none;
 }
 
-.reveal img {
+.reveal section img {
   display: block;
   margin: 0 auto;
   border: 1px solid #eee;
