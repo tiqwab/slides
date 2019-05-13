@@ -22,6 +22,9 @@ https://gitpitch.com/tiqwab/slides?p=elasticsearch-tips
 - Index Alias
   - [Elasticsearch インデックス・エイリアス][11]
   - [Index Aliases][12]
+- Split Brain
+  - [Minimum Master Nodes][13]
+  - [Breaking changes in 7.0][14]
 
 [1]: https://www.elastic.co/jp/blog/strings-are-dead-long-live-strings
 [2]: https://www.elastic.co/guide/en/elasticsearch/guide/current/indexing-performance.html
@@ -35,3 +38,5 @@ https://gitpitch.com/tiqwab/slides?p=elasticsearch-tips
 [10]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-routing-field.html
 [11]: https://medium.com/hello-elasticsearch/elasticsearch-c8c9c711f40
 [12]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html
+[13]: https://www.elastic.co/guide/en/elasticsearch/guide/1.x/_important_configuration_changes.html#_minimum_master_nodes
+[14]: https://www.elastic.co/guide/en/elasticsearch/reference/current/breaking-changes-7.0.html

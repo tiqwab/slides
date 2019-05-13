@@ -168,8 +168,9 @@ $ curl http://localhost:9200/index1/_settings | jq .
 ### Split Brain の防止
 
 - `discovery.zen.minimum_master_nodes` を master eligible の過半数となる数字に設定する
-  - master eligible 3 台なら 2
-- ただ latest の 7.x なんかだと master eligible な node を指定するようになっていて、`minimum_master_nodes` という設定は deprecated になっているっぽい
+  - master eligible が 3 台なら 2
+- ただ latest の 7.x だと上の設定が deprecated
+  - master eligible な node を指定するようになっている感じ?
 
 参考:
 

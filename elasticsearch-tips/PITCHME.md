@@ -178,6 +178,14 @@ shard_num = hash(_routing) % num_primary_shards
 
 ### Split Brain の防止
 
+From Wikipedia 「スプリットブレインシンドローム」:
+
+> スプリットブレインシンドロームとは、複数のコンピュータを相互接続して1台のサーバのように動作させるシステムにおいて、ハードウェアやインターコネクトの障害によりシステムが分断され、1つのサービスがクラスタ内の複数のノード軍で同時に起動してしまい、サービス供給が停止してしまう状況のこと
+
+---
+
+### Split Brain の防止
+
 ![split-brain1](elasticsearch-tips/assets/images/split-brain1.PNG)
 
 ---
@@ -185,6 +193,14 @@ shard_num = hash(_routing) % num_primary_shards
 ### Split Brain の防止
 
 ![split-brain2](elasticsearch-tips/assets/images/split-brain2.PNG)
+
+---
+
+### Split Brain の防止
+
+- `discovery.zen.minimum_master_nodes` を master eligible の過半数となる数字に設定する
+  - master eligible 3 台なら 2
+- ただ latest の 7.x なんかだと master eligible な node を指定するようになっていて、`minimum_master_nodes` という設定は deprecated になっているっぽい
 
 ---
 
