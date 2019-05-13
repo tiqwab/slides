@@ -17,10 +17,9 @@
 - 文字列の完全一致検索
 - Index 設定の変更
 - EC2 でクラスタ構築する際の考慮点
-- 正確な cardinality 計算はできない
-- Index Alias
+- 正確な cardinality 計算
 - Routing
-- Shard Allocation Awareness
+- Index Alias の活用
 - Shard Allocation Filtering
 - Split Brain の防止
 
@@ -121,7 +120,7 @@ $ curl http://localhost:9200/index1/_mappings
 ### Shard Allocation Awareness
 
 - primary と replica shard の配置を何らかコントロールしたい場合に使う
-  - 例. 同じラック上の node には同じ shard の primary と replica が配置したくない
+  - 例. primary と replica shard を同じラック上の node には配置したくない
 - AWS 上だと availability zone でわけるべき
   - [AWS Cloud Plugin][3] ではそうなっている
 
@@ -132,6 +131,49 @@ $ curl http://localhost:9200/index1/_mappings
 # plugin で入っている前提
 cluster.routing.allocation.awareness.attributes: aws_availability_zone
 ```
+
+---
+
+### 正確な cardinality 計算
+
+- Elasticsearch には正確な cardinality 計算方法がない
+  - 限られたリソース (主にメモリ?) では任意の cardinality は扱えない
+- 代わりに HyperLogLog++ という確率的アルゴリズムを使用する
+  - cardinality 100 万ぐらいなら 1% ぐらいの誤差に抑えられる
+
+---
+
+### Routing
+
+- `_routing` によって保存先の shard が決まる
+  - デフォルトは `_id`
+- `_routing` を指定することで特定の検索パフォーマンスを向上できる
+- Index Alias と組み合わせればある routing を持つデータだけ別 index にしたりできる
+
+```
+shard_num = hash(_routing) % num_primary_shards
+```
+
+---
+
+### Index Alias の活用
+
+- Index に別名をつける
+  - cluster 外からは同じ index 名だけど実体は異なるみたいなことができる
+  - 1 alias で複数 index 指定も可能
+- Elasticsearch を使うならはじめに設定しておきたい
+
+---
+
+### Index Alias と Rollover
+
+---
+
+### Index Alias と Reindex
+
+---
+
+### Index Alias と Routing
 
 ---
 
