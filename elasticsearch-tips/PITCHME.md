@@ -20,8 +20,8 @@
 - 正確な cardinality 計算
 - Routing
 - Index Alias の活用
-- Shard Allocation Filtering
 - Split Brain の防止
+- Shard Allocation Filtering
 
 ---
 
@@ -30,7 +30,7 @@
 - (v2.x の) デフォルトでは string 型は analyze される
   - analyze 処理で tokenize されてしまう
   - IFA で検索しても引っかからない...みたいになる
-- 全文検索したいフィールドでないなら `not_analyzed` にするべき
+- 全文検索したいフィールドでないなら `not_analyzed` に
 
 ```json
 $ curl http://localhost:9200/index1/_mappings
@@ -73,7 +73,6 @@ $ curl http://localhost:9200/index1/_mappings
 ### Index 設定の変更
 
 - 一度稼働し始めた index では変更できない設定がある
-- 変えられない設定
   - mapping
     - not\_analyzed にするために reindex した経験あり
   - shard 数
@@ -85,9 +84,9 @@ $ curl http://localhost:9200/index1/_mappings
 
 - 欲しい index 定義にした上でまるっとデータを入れ直す
 - 専用の API あり (ただし stable になったのは v5.0 以降)
-- 高速な reindex のためにはいくつか考慮すべき設定、変数がある
-  - replica 数
-  - refresh\_interval
+- 高速な reindex のためにはいくつか考慮が必要
+  - replica 数を 0 にする
+  - refresh\_interval を 0 にする
   - 一度にバルク処理するドキュメント数
 
 ---
@@ -137,7 +136,7 @@ cluster.routing.allocation.awareness.attributes: aws_availability_zone
 ### 正確な cardinality 計算
 
 - Elasticsearch には正確な cardinality 計算方法がない
-  - 限られたリソース (主にメモリ?) では任意の cardinality は扱えない
+  - 限られたリソースでは任意の cardinality は扱えない
 - 代わりに HyperLogLog++ という確率的アルゴリズムを使用する
   - cardinality 100 万ぐらいなら 1% ぐらいの誤差に抑えられる
 
@@ -174,6 +173,46 @@ shard_num = hash(_routing) % num_primary_shards
 ---
 
 ### Index Alias と Routing
+
+---
+
+### Split Brain の防止
+
+![split-brain1](elasticsearch-tips/assets/images/split-brain1.PNG)
+
+---
+
+### Split Brain の防止
+
+![split-brain2](elasticsearch-tips/assets/images/split-brain2.PNG)
+
+---
+
+### Shard Allocation Filtering
+
+- cluster, index レベルで shard を配置する node をコントロールできる
+- 元々は稼働中のシステムに alias を設定するために利用した
+- いまはもういらないかも
+
+```
+# node 名を利用した filtering 設定
+$ curl http://localhost:9200/index1/_settings | jq .
+{
+  "index1": {
+    "settings": {
+      "index": {
+        "routing": {
+          "allocation": {
+            "include": {
+              "_name": "node1,node2,node3"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
 
 ---
 
