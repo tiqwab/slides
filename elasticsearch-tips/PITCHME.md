@@ -16,7 +16,7 @@
 
 - 文字列の完全一致検索
 - Index 設定の変更
-- EBS ではなく instance store
+- EC2 でクラスタ構築する際の考慮点
 - 正確な cardinality 計算はできない
 - Index Alias
 - Routing
@@ -76,7 +76,7 @@ $ curl http://localhost:9200/index1/_mappings
 - 一度稼働し始めた index では変更できない設定がある
 - 変えられない設定
   - mapping
-    - `not_analyzed` にするために reindex した経験あり
+    - not\_analyzed にするために reindex した経験あり
   - shard 数
     - データが増えると shard サイズは増える一方
 
@@ -88,8 +88,50 @@ $ curl http://localhost:9200/index1/_mappings
 - 専用の API あり (ただし stable になったのは v5.0 以降)
 - 高速な reindex のためにはいくつか考慮すべき設定、変数がある
   - replica 数
-  - `refresh_interval`
+  - refresh\_interval
   - 一度にバルク処理するドキュメント数
+
+---
+
+### EC2 でクラスタ構築する際の考慮点
+
+- EBS or Instance Store
+- Shard Allocation Awareness
+
+---
+
+### EBS or Instance Store
+
+- EBS
+  - ネットワーク経由のアクセスになる
+  - インスタンスが停止、終了してもデータは残る
+- instance store
+  - 物理的に接続されたディスクへのアクセス
+  - インスタンスが停止、終了するとデータは消える (再起動は除く)
+
+---
+
+### EBS or Instance Store
+
+- [Best Practices in AWS][2] では instance store を推奨
+- 大規模 cluster で安く性能を出すなら instance store
+
+---
+
+### Shard Allocation Awareness
+
+- primary と replica shard の配置を何らかコントロールしたい場合に使う
+  - 例. 同じラック上の node には同じ shard の primary と replica が配置したくない
+- AWS 上だと availability zone でわけるべき
+  - [AWS Cloud Plugin][3] ではそうなっている
+
+```
+# in /etc/elasticsearch/elasticsearch.yml
+#
+# 各 node には node.attr.aws_availability_zone = ap-northeast-1 のような設定が
+# plugin で入っている前提
+cluster.routing.allocation.awareness.attributes: aws_availability_zone
+```
 
 ---
 
@@ -98,3 +140,5 @@ $ curl http://localhost:9200/index1/_mappings
 - [README of tiqwab/slides/elasticsearch-tips][1]
 
 [1]: https://github.com/tiqwab/slides/tree/master/elasticsearch-tips
+[2]: https://www.elastic.co/guide/en/elasticsearch/plugins/master/cloud-aws-best-practices.html
+[3]: https://www.elastic.co/guide/en/elasticsearch/plugins/2.4/cloud-aws.html
