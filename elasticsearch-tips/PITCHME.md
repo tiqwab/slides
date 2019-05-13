@@ -164,15 +164,18 @@ shard_num = hash(_routing) % num_primary_shards
 
 ---
 
-### Index Alias と Rollover
+### Index Alias の活用
+
+![index-alias1](elasticsearch-tips/assets/images/index-alias1.PNG)
 
 ---
 
-### Index Alias と Reindex
+### Index Alias の活用
 
----
-
-### Index Alias と Routing
+- Alias が活きる場面例
+  - rollover
+  - reindex
+  - routing
 
 ---
 
@@ -180,7 +183,7 @@ shard_num = hash(_routing) % num_primary_shards
 
 From Wikipedia 「スプリットブレインシンドローム」:
 
-> スプリットブレインシンドロームとは、複数のコンピュータを相互接続して1台のサーバのように動作させるシステムにおいて、ハードウェアやインターコネクトの障害によりシステムが分断され、1つのサービスがクラスタ内の複数のノード軍で同時に起動してしまい、サービス供給が停止してしまう状況のこと
+> スプリットブレインシンドロームとは、複数のコンピュータを相互接続して1台のサーバのように動作させるシステムにおいて、ハードウェアやインターコネクトの障害によりシステムが分断され、1つのサービスがクラスタ内の複数のノード群で同時に起動してしまい、サービス供給が停止してしまう状況のこと
 
 ---
 
@@ -206,8 +209,8 @@ From Wikipedia 「スプリットブレインシンドローム」:
 
 ### Shard Allocation Filtering
 
-- cluster, index レベルで shard を配置する node をコントロールできる
-- 元々は稼働中のシステムに alias を設定するために利用した
+- shard を配置する node をコントロールできる
+- 稼働中のシステムに alias を設定するために利用した
 - いまはもういらないかも
 
 ```
