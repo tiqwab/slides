@@ -3,6 +3,8 @@
 }
 
 .slides img {
-  margin: 0 auto;
-  border: 1px solid #eee;
+  margin: 0 auto; !important
+  border: 1px solid #eee; !important
+  max-width: 80%; !importatn
+  max-height: 80%; !important
 }
