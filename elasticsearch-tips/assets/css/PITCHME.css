@@ -2,13 +2,13 @@
   text-transform: none;
 }
 
-.slides img {
+.slides section img {
   margin: 0 auto !important;
   border: 1px solid #eee !important;
   max-width: 80% !important;
   max-height: 80% !important;
 }
 
-.slides {
+.slides section {
     font-size: 36px;
 }
