@@ -111,7 +111,7 @@ $ curl http://localhost:9200/index1/_mappings
 
 ### EBS or Instance Store
 
-- [Best Practices in AWS][2] では instance store を推奨
+- [Best Practices in AWS][1] では instance store を推奨
 - 大規模 cluster で安く性能を出すなら instance store
 
 ---
@@ -121,7 +121,7 @@ $ curl http://localhost:9200/index1/_mappings
 - primary と replica shard の配置を何らかコントロールしたい場合に使う
   - 例. primary と replica shard を同じラック上の node には配置したくない
 - AWS 上だと availability zone でわけるべき
-  - [AWS Cloud Plugin][3] ではそうなっている
+  - [AWS Cloud Plugin][2] ではそうなっている
 
 ```
 # in /etc/elasticsearch/elasticsearch.yml
@@ -238,6 +238,6 @@ $ curl http://localhost:9200/index1/_settings | jq .
 
 - [README of tiqwab/slides/elasticsearch-tips][1]
 
-[1]: https://github.com/tiqwab/slides/tree/master/elasticsearch-tips
-[2]: https://www.elastic.co/guide/en/elasticsearch/plugins/master/cloud-aws-best-practices.html
-[3]: https://www.elastic.co/guide/en/elasticsearch/plugins/2.4/cloud-aws.html
+[1]: https://www.elastic.co/guide/en/elasticsearch/plugins/master/cloud-aws-best-practices.html
+[2]: https://www.elastic.co/guide/en/elasticsearch/plugins/2.4/cloud-aws.html
+[3]: https://github.com/tiqwab/slides/tree/master/elasticsearch-tips
