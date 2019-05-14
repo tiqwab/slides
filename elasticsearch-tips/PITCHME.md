@@ -147,7 +147,6 @@ cluster.routing.allocation.awareness.attributes: aws_availability_zone
 - `_routing` によって保存先の shard が決まる
   - デフォルトは `_id`
 - `_routing` を指定することで特定の検索パフォーマンスを向上できる
-- Index Alias と組み合わせればある routing を持つデータだけ別 index にしたりできる
 
 ```
 shard_num = hash(_routing) % num_primary_shards
