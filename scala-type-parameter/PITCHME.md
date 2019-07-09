@@ -242,15 +242,21 @@ val s: MyStack[Dog] = MyStack()
 
 ### 下限境界
 
-- コレクションでよく見る例
+- 上限境界と逆の関係
+- コレクション等でよく見る例
 
 ```scala
 trait Animal
 class Dog extends Animal
 class Cat extends Animal
-```
 
----
+// パラメータ A を共変にする
+class MyStack[+A] private (content: List[A]) {
+  // 下限境界を設定する
+  def push[A1 >: A](a: A1): MyStack[A1] = new MyStack(a :: content)
+  ...
+}
+```
 
 ```scala
 scala> val s1: MyStack[Dog] = MyStack()
@@ -264,7 +270,7 @@ s3: MyStack[Animal]
 
 ### 抽象型メンバ
 
-- 型パラメータと似ている？
+- 最初見たとき型パラメータと似ている？ 使い分け？ と混乱した
 
 ```scala
 trait Foo[A] {
@@ -289,7 +295,7 @@ scala> x2.bar(0)
 
 ---
 
-### Animal と Food の例
+### Animal と Food の例 (1)
 
 - コップ本にある例
 - 牛は草しか食べないことにしたい
@@ -320,7 +326,7 @@ scala> cow.eat(Fish())
 
 ---
 
-### Animal と Food の例
+### Animal と Food の例 (2)
 
 - コップ本にある例
 - 牛は草しか食べないことにしたい
@@ -353,7 +359,7 @@ scala> cow.eat(Fish())
 
 ---
 
-### Animal と Food の例
+### Animal と Food の例 (3)
 
 - 型パラメータを使う
 
@@ -370,7 +376,7 @@ case class Fish() extends Food
 case class Whale() extends Animal[Fish]
 ```
 
-```
+```scala
 scala> val cow: Cow = Cow()
 scala> cow.eat(Grass())
 scala> cow.eat(Fish()) // compile error
@@ -385,7 +391,7 @@ scala> animal.eat(Grass()) // compile error: required _$1
 
 ---
 
-### Animal と Food の例
+### Animal と Food の例 (4)
 
 - 抽象型メンバを使う
 
@@ -407,7 +413,7 @@ case class Whale() extends Animal {
 }
 ```
 
-```
+```scala
 scala> val cow: Cow = Cow()
 scala> cow.eat(Grass())
 scala> cow.eat(Fish()) // compile error
@@ -493,10 +499,13 @@ class Hunter[T <: Animal] {
     - 型パラメータ
   - 継承先で型を再定義したい、型を隠蔽したい
     - 抽象型メンバ
-    - 例えば最近見たのだと Entity が持つ ID の型を型メンバで持つべきだという議論が
+    - 例えば [先日見た][2] のだと Entity が持つ ID の型を型メンバで持つべきだという議論が
+
+---
 
 ### 資料まとめ
 
 - [README of tiqwab/slides/scala-type-parameter][1]
 
 [1]: https://github.com/tiqwab/slides/tree/master/scala-type-parameter
+[2]: https://togetter.com/li/1325895
