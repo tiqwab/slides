@@ -208,42 +208,272 @@ covariant type A occurs in contravariant position in type A of value a
 
 ---
 
-### Set が共変ではない理由 (?)
+### (Set が共変ではない理由)
 
 ---
 
 ### 上限境界
 
-- MyStack との組み合わせ
+- MyStack に入るのは絶対に Animal、みたいなことができる
+
+```scala
+trait Animal
+class Dog extends Animal
+
+class MyStack[A <: Animal] private (content: List[A]) {
+  ...
+}
+
+val s: MyStack[Dog] = MyStack()
+// val s: MyStack[Int] = MyStack() // not compiled
+```
+
+---
 
 ### 下限境界
 
-- MyStack との組み合わせ
+- コレクションでよく見る例
+
+```scala
+trait Animal
+class Dog extends Animal
+class Cat extends Animal
+```
+
+---
+
+```scala
+scala> val s1: MyStack[Dog] = MyStack()
+scala> val s2 = s1.push(new Dog())
+s2: MyStack[Dog] = ...
+scala> val s3 = s2.push(new Cat())
+s3: MyStack[Animal]
+```
+
+---
 
 ### 抽象型メンバ
 
+- 型パラメータと似ている？
+
 ```scala
 trait Foo[A] {
-    def bar(a: A): Unit = ???
+    def bar(a: A): Unit = ()
 }
 
 trait Foo {
     type A
-    def bar(a: A): Unit = ???
+    def bar(a: A): Unit = ()
 }
 ```
 
+```scala
+scala> val x1 = new Foo[Int]{}
+x1: Foo1[Int] = ...
+scala> x1.bar(0)
+
+scala> val x2 = new Foo { type A = Int }
+x2: Foo2{type A = Int} = ...
+scala> x2.bar(0)
+```
+
+---
+
 ### Animal と Food の例
 
-- 普通にやるとコンパイルエラーか牛に魚を食べさせることになる
+- コップ本にある例
+- 牛は草しか食べないことにしたい
+
+```scala
+trait Food
+trait Animal {
+  def eat(a: Food): Unit
+}
+
+case class Grass() extends Food
+case class Cow() extends Animal {
+  // 牛は草しか食べないということを表現できていない
+  override def eat(a: Food): Unit = ()
+}
+
+case class Fish() extends Food
+```
+
+```scala
+scala> val cow: Cow = Cow()
+scala> cow.eat(Grass())
+
+// 魚を食べる牛
+scala> val animal: Animal = cow
+scala> cow.eat(Fish())
+```
+
+---
 
 ### Animal と Food の例
 
-- コップ本の Animal の例を型パラメータで
+- コップ本にある例
+- 牛は草しか食べないことにしたい
+
+```scala
+trait Food
+trait Animal {
+  def eat(a: Food): Unit
+}
+
+case class Grass() extends Food
+case class Cow() extends Animal {
+  // もし継承先で引数の型も派生型にできると...
+  // (実際に Scala でコンパイルは通らない)
+  override def eat(a: Grass): Unit = ()
+}
+
+case class Fish() extends Food
+```
+
+```scala
+scala> val cow: Cow = Cow()
+scala> cow.eat(Grass())
+scala> cow.eat(Fish()) // compile error
+
+// しかし Animal 型にキャストすれば魚を食べさせることは可能
+scala> val animal: Animal = cow
+scala> cow.eat(Fish())
+```
+
+---
 
 ### Animal と Food の例
 
-- 抽象型メンバで
+- 型パラメータを使う
+
+```scala
+trait Food
+trait Animal[A <: Food] {
+  def eat(a: A): Unit = ()
+}
+
+case class Grass() extends Food
+case class Cow() extends Animal[Grass]
+
+case class Fish() extends Food
+case class Whale() extends Animal[Fish]
+```
+
+```
+scala> val cow: Cow = Cow()
+scala> cow.eat(Grass())
+scala> cow.eat(Fish()) // compile error
+
+scala> val whale: Whale = Whale()
+scala> whale.eat(Fish())
+scala> whale.eat(Grass()) // compile error
+
+scala> val animal: Animal[_] = cow
+scala> animal.eat(Grass()) // compile error: required _$1
+```
+
+---
+
+### Animal と Food の例
+
+- 抽象型メンバを使う
+
+```scala
+trait Food
+trait Animal {
+  type SuitableFood <: Food
+  def eat(a: SuitableFood): Unit = ()
+}
+
+case class Grass() extends Food
+case class Cow() extends Animal {
+  type SuitableFood = Grass
+}
+
+case class Fish() extends Food
+case class Whale() extends Animal {
+  type SuitableFood = Fish
+}
+```
+
+```
+scala> val cow: Cow = Cow()
+scala> cow.eat(Grass())
+scala> cow.eat(Fish()) // compile error
+
+scala> val whale: Whale = Whale()
+scala> whale.eat(Fish())
+scala> whale.eat(Grass()) // compile error
+
+scala> val animal: Animal = cow
+scala> animal.eat(Grass()) // compile error: required animal.SuitableFood
+```
+
+---
+
+### 仕様追加: Hunter 登場
+
+- 型パラメータ
+
+```scala
+trait Animal[A <: Food] {
+    ...
+}
+
+class Hunter[T <: Animal[_]] {
+    def hunt(a: T): Unit = ()
+}
+```
+
+- 抽象型メンバ
+
+```scala
+trait Animal {
+    ...
+}
+
+class Hunter[T <: Animal] {
+  def hunt(a: T): Unit = ()
+}
+```
+
+---
+
+### 仕様追加: Animal は Liquid を飲む
+
+- 型パラメータ
+
+```scala
+trait Liquid
+
+trait Animal[A <: Food, B <: Liquid] {
+    ...
+    def drink(b: B): Unit = ()
+}
+
+// Hunter のインタフェースにも影響がある
+class Hunter[T <: Animal[_, _]] {
+    def hunt(a: T): Unit = ()
+}
+```
+
+- 抽象型メンバ
+
+```scala
+trait Animal {
+    ...
+    type SuitableLiquid
+    def drink(b: SuitableLiquid): Unit = ()
+}
+
+// 変更はない
+class Hunter[T <: Animal] {
+  def hunt(a: T): Unit = ()
+}
+```
+
+---
 
 ### 型パラメータと抽象型メンバ
 
