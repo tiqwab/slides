@@ -1,6 +1,20 @@
-## Scala の型パラメータ
+## Scala の型パラメータ と抽象型メンバ
 
 ### 2019-07-09
+
+---
+
+### トピック
+
+話すこと:
+
+- 型パラメータについて
+- 抽象型メンバについて
+- 具体例を通して両者の比較
+
+動機:
+
+- 型パラメータと抽象型メンバの使い分けを自分なりに整理したかった
 
 ---
 
@@ -91,39 +105,37 @@ func main() {
 trait Animal
 class Dog extends Animal
 class Foo[A]
+```
 
-val s1: Foo[Dog] = new Foo[Dog]()
-// val s2: Foo[Animal] = new Foo[Dog]() // should be covariant
-// val s2: Foo[Dog] = new Foo[Animal]() // should be contravariant
+```scala
+scala> val s1: Foo[Dog] = new Foo[Dog]()
 ```
 
 ---
 
-### 共変
+### 共変 (1)
 
-- `class Foo[+A]`
 - B extends A ならば Foo[A] に Foo[B] が適合する
+- `class Foo[+A]`
 - (scala.Predef で import される) Seq, List は 共変
-
----
-
-### 共変
 
 ```scala
 trait Animal { def walk(): Unit }
 class Dog extends Animal { def walk(): Unit = ... }
+```
 
-val ds: List[Dog] = List(new Dog(), new Dog())
-val as: List[Animal] = ds
-as.foreach(_.walk())
+```scala
+scala> val ds: List[Dog] = List(new Dog(), new Dog())
+scala> val as: List[Animal] = ds
+scala> as.foreach(_.walk())
 ```
 
 ---
 
-### 共変
+### 共変 (2)
 
 - mutable なデータ構造は共変にはできない
-- e.g. `java.util.Array`
+- e.g. Java の配列
 
 ```java
 class Sample1 {
@@ -146,16 +158,16 @@ Exception in thread "main" java.lang.ArrayStoreException: java.lang.String
 
 ### 反変
 
-- `class Foo[-A]`
 - B extends A ならば Foo[B] に Foo[A] が適合する
+- `class Foo[-A]`
 
 ```scala
-val s2: Foo[Dog] = new Foo[Animal]()
+scala> val s2: Foo[Dog] = new Foo[Animal]()
 ```
 
 ---
 
-### 共変と反変の例 
+### 共変と反変の例 (1)
 
 ```scala
 trait Function1[-A, +B] {
@@ -165,7 +177,7 @@ trait Function1[-A, +B] {
 
 ---
 
-### 共変と反変の例 
+### 共変と反変の例 (2)
 
 ```scala
 trait Animal
@@ -173,14 +185,16 @@ trait Mammalian extends Animal
 class Dog extends Mammalian
 
 class Transformer(f: Mammalian => Mammalian)
+```
 
-val f1: Marmalian => Marmalian = ...
-val f2: Animal => Dog = ...
-val f3: Dog => Animal = ...
+```scala
+scala> val f1: Marmalian => Marmalian = ...
+scala> val f2: Animal => Dog = ...
+scala> val f3: Dog => Animal = ...
 
-new Transformer(f1)
-new Transformer(f2)
-// new Transformer(f3) // not compiled
+scala> new Transformer(f1)
+scala> new Transformer(f2)
+scala> new Transformer(f3) // compile error
 ```
 
 ---
@@ -190,14 +204,14 @@ new Transformer(f2)
 - 変位指定に問題が無いかはコンパイラでチェックできる
 
 ```scala
-  class MyStack[+A] private (content: List[A]) {
-    def push(a: A): MyStack[A] = new MyStack(a :: content)
+class MyStack[+A] private (content: List[A]) {
+  def push(a: A): MyStack[A] = new MyStack(a :: content)
 
-    def pop(): (A, MyStack[A]) = content match {
-      case Nil     => throw new NoSuchElementException("empty")
-      case x :: xs => (x, new MyStack(xs))
-    }
+  def pop(): (A, MyStack[A]) = content match {
+    case Nil     => throw new NoSuchElementException("empty")
+    case x :: xs => (x, new MyStack(xs))
   }
+}
 ```
 
 ```
@@ -205,10 +219,6 @@ covariant type A occurs in contravariant position in type A of value a
      def push(a: A): MyStack[A] = new MyStack(a :: content)
               ^
 ```
-
----
-
-### (Set が共変ではない理由)
 
 ---
 
